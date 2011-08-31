@@ -196,17 +196,23 @@ def readfasta(infile, degap=False):
     Lightweight fasta parser. Returns iterator of Seqobj objects given open file 'infile'.
     """
 
+    has_seqs = False
+    
     name, seq = '', ''
     for line in infile:
         if line.startswith('>'):
             if name:
+                has_seqs = True
                 yield Seqobj(name, seq)
             name, seq = line.strip('>').split(None, 1)[0], ''
         else:
             seq += line.strip().replace('-','') if degap else line.strip()
-                
-    yield Seqobj(name, seq)
-
+            
+    if has_seqs:
+        yield Seqobj(name, seq)
+    else:
+        raise ValueError('no sequences could be read')
+        
 def tabulate( seqList ):
     """calculate the abundance of each character in the columns of
     aligned sequences; tallies are returned as a list of dictionaries

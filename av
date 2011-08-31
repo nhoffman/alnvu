@@ -6,24 +6,25 @@ from optparse import OptionParser
 import pprint
 import time
 
-import Seq
+import alnvu.util as util
+
 log = logging
 
 def main():
 
-    usage = """%prog [options]
+    usage = """%prog [options] fasta_file
 
 Create formatted sequence alignments with optional pdf output.
 """
 
-    parser = OptionParser(usage=usage, version="$Id: findDuplicates.py 3354 2010-04-12 18:11:22Z nhoffman $")
+    parser = OptionParser(usage=usage, version = "$Id: findDuplicates.py 3354 2010-04-12 18:11:22Z nhoffman $")
 
     parser.set_defaults(
         add_consensus = False,
         compare_to = 0,
         # number_by = 0,
         exclude_invariant = False,
-        exclude_gapcols = False,
+        include_gapcols = False,
         min_subs = 1,
         name_max= 35,
         ncol = 115,
@@ -36,9 +37,6 @@ Create formatted sequence alignments with optional pdf output.
         quiet = False,
         seqnums = False
     )
-
-    parser.add_option("-f", "--infile", dest="infile",
-        help="input FILE containing sequence alignment")
 
     parser.add_option("-o", "--outfile", dest="outfile",
         help="Write output to a pdf file.")
@@ -69,8 +67,8 @@ the sequence numbers for reference. A value of -1 suppresses this behavior.
 bases (set min_subs using the -s option)""",
         action='store_true')
 
-    parser.add_option("-g", "--exclude-gapcols", dest="exclude_gapcols",
-        help="Remove columns containing only gap characters.",
+    parser.add_option("-g", "--include-gapcols", dest="include_gapcols",
+        help="Show columns containing only gap characters.",
         action='store_true')
 
     parser.add_option("-s", "--min_subs", dest="min_subs",
@@ -137,10 +135,13 @@ bases (set min_subs using the -s option)""",
         format=logformat,
         level=loglevel)
 
-    instr = open(options.infile).read()
-    seqs = Seq.io_fasta.read(instr)
+    if args:
+        ## TODO: support for multiple files?
+        infile = open(args[0], 'rU')
+    else:
+        infile = sys.stdin
 
-    log.info('Read %s sequences from %s' % (len(seqs), options.infile))
+    seqs = util.readfasta(infile)
 
     if options.rawrange:
         try:
@@ -155,7 +156,7 @@ bases (set min_subs using the -s option)""",
     else:
         seqrange = None
 
-    pages = Seq.sequtil.reformat(
+    pages = util.reformat(
         seqs,
         name_min = 10,
         name_max = options.name_max,
@@ -163,7 +164,7 @@ bases (set min_subs using the -s option)""",
         ncol = options.ncol,
         add_consensus = options.add_consensus,
         compare_to = options.compare_to,
-        exclude_gapcols = options.exclude_gapcols,
+        exclude_gapcols = not options.include_gapcols,
         exclude_invariant = options.exclude_invariant,
         min_subs = options.min_subs,
         simchar = '.',

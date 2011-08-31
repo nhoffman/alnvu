@@ -1,16 +1,11 @@
-import sequtil
 import os
 import logging
 import sys
 log = logging
 
-try:
-    from reportlab.pdfgen import canvas
-    from reportlab.lib.units import inch, cm
-    from reportlab.lib.pagesizes import letter, landscape, portrait
-except ImportError, msg:
-    #log.error(msg)
-    pass
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch, cm
+from reportlab.lib.pagesizes import letter, landscape, portrait
 
 def pdf_align(pages, outfile, fontsize = 7, orientation='portrait',
               blocks_per_page=1):
