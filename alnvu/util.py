@@ -191,7 +191,7 @@ class Seqobj(object):
         return self.seq[start:end]
 
     
-def readfasta(infile, degap=False):
+def readfasta(infile, degap = False, namesplit = None):
     """
     Lightweight fasta parser. Returns iterator of Seqobj objects given open file 'infile'.
     """
@@ -204,7 +204,10 @@ def readfasta(infile, degap=False):
             if name:
                 has_seqs = True
                 yield Seqobj(name, seq)
-            name, seq = line.strip('>').split(None, 1)[0], ''
+            if namesplit is False:
+                name, seq = line[1:].strip(), ''
+            else:
+                name, seq = line.strip('>').split(None, 1)[0], ''
         else:
             seq += line.strip().replace('-','') if degap else line.strip()
             

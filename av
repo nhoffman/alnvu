@@ -87,7 +87,7 @@ bases (set min_subs using the -s option)""",
         metavar="NUMBER", type='int')
 
     parser.add_option("-n", "--name-max", dest="name_max",
-        help="maximum width of sequence name",
+        help="maximum width of sequence name in characters [%default]",
         metavar="NUMBER", type='int')
 
     parser.add_option("-w", "--width", dest="ncol",
@@ -149,7 +149,7 @@ bases (set min_subs using the -s option)""",
     if args:
         ## TODO: support for multiple files?
         with open(args[0], 'rU') as infile:
-            seqs = list(util.readfasta(infile))
+            seqs = list(util.readfasta(infile, namesplit = False))
     else:
         seqs = list(util.readfasta(sys.stdin))
 
