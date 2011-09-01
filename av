@@ -7,8 +7,19 @@ import pprint
 import time
 
 import alnvu.util as util
+import alnvu.pdf as pdf
 
 log = logging
+
+def get_range(rawrange):
+
+    try:
+        start, stop = [int(x) for x in rawrange.split(',')]
+    except ValueError:
+        log.error('Error in "-r/--range %s": argument requires two integers separated by a comma.' % rawrange)
+        sys.exit(1)
+        
+    return [start, stop]
 
 def main():
 
@@ -41,7 +52,7 @@ Create formatted sequence alignments with optional pdf output.
     parser.add_option("-o", "--outfile", dest="outfile",
         help="Write output to a pdf file.")
 
-    parser.add_option("-c", "--add_consensus", dest="add_consensus",
+    parser.add_option("-c", "--consensus", dest="add_consensus",
         help="Include show a consensus sequence [%default]",
         action='store_true')
 
@@ -91,8 +102,8 @@ bases (set min_subs using the -s option)""",
         help="Convert all characters to a uniform case ('upper','lower') [%default]",
         metavar='CASE', choices=['upper','lower'])
 
-    parser.add_option("-p", "--per-page", dest="nrow",
-        help="Sequences (lines) per page of pdf output. [%default]",
+    parser.add_option("-L", "--lines-per-block", dest="nrow",
+        help="Sequences (lines) per block. [%default]",
         metavar="NUMBER", type='int')
 
     parser.add_option("-r", "--range", dest="rawrange",
@@ -137,24 +148,10 @@ bases (set min_subs using the -s option)""",
 
     if args:
         ## TODO: support for multiple files?
-        infile = open(args[0], 'rU')
+        with open(args[0], 'rU') as infile:
+            seqs = list(util.readfasta(infile))
     else:
-        infile = sys.stdin
-
-    seqs = util.readfasta(infile)
-
-    if options.rawrange:
-        try:
-            seqrange = [int(x) for x in options.rawrange.split(',')]
-            if len(seqrange) != 2:
-                raise ValueError
-        except ValueError:
-            log.error('Error in "-r %s": argument requires two integers separated by a comma.' % options.rawrange)
-            sys.exit(1)
-        else:
-            log.info('Restricting alignment to positions %s' % str(seqrange))
-    else:
-        seqrange = None
+        seqs = list(util.readfasta(sys.stdin))
 
     pages = util.reformat(
         seqs,
@@ -171,7 +168,7 @@ bases (set min_subs using the -s option)""",
         # number_by = options.number_by,
         countGaps = False,
         case = options.case,
-        seqrange = seqrange,
+        seqrange = get_range(options.rawrange) if options.rawrange else None,
         seqnums = options.seqnums)
 
     if not options.quiet:
@@ -182,7 +179,7 @@ bases (set min_subs using the -s option)""",
 
     if options.outfile:
         log.info('Writing %s' % options.outfile)
-        Seq.pdfutils.pdf_align(
+        pdf.print_pdf(
             pages,
             outfile = options.outfile,
             fontsize = options.fontsize,

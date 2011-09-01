@@ -7,7 +7,24 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch, cm
 from reportlab.lib.pagesizes import letter, landscape, portrait
 
-def pdf_align(pages, outfile, fontsize = 7, orientation='portrait',
+from itertools import izip_longest, takewhile
+
+def grouper(n, iterable, pad=True):
+    """
+    Return sequence of n-tuples composed of successive elements
+    of iterable; last tuple is padded with None if necessary. Not safe
+    for iterables with None elements.
+    """
+
+    args = [iter(iterable)] * n
+    iterout = izip_longest(fillvalue=None, *args)
+
+    if pad:
+        return iterout
+    else:
+        return (takewhile(lambda x: x is not None, c) for c in iterout)
+
+def print_pdf(pages, outfile, fontsize = 7, orientation='portrait',
               blocks_per_page=1):
 
     if orientation == 'portrait':
@@ -48,7 +65,7 @@ def pdf_align(pages, outfile, fontsize = 7, orientation='portrait',
     canv = canvas.Canvas(outfile, invariant=1, pagesize=pagesize)
     canv.setPageCompression(1)
 
-    pageIter = list(sequtil.grouper(blocks_per_page, pages, pad=False))
+    pageIter = list(grouper(blocks_per_page, pages, pad=False))
 
     for pagegroup in pageIter:
         drawPageFrame(canv)

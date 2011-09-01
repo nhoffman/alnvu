@@ -141,7 +141,7 @@ def reformat(seqs,
                 msg += 'sequences %s to %s of %s' % \
                 (first+1, last, seqcount)
 
-            if number_by != 'consensus':
+            if number_by > 0:
                 msg += (' alignment numbered according to %s' % number_by)
 
             if msg:
