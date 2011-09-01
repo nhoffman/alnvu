@@ -22,10 +22,29 @@ class TestReadFasta(unittest.TestCase):
         with open(infile) as f:
             seqs = util.readfasta(f)
             seq = seqs.next()
-            
+
         self.assertTrue(hasattr(seq, 'name'))
         self.assertTrue(hasattr(seq, 'seq'))
-        
+
+
+class TestReadFasta(unittest.TestCase):
+    def setUp(self):
+        self.fobj = open(infile)
+
+    def tearDown(self):
+        self.fobj.close()
+
+    def test01(self):
+        seqs = util.readfasta(self.fobj)
+        self.assertTrue('H59735' == seqs.next().name)
+
+    def test02(self):
+        seqs = util.readfasta(self.fobj, name_split = False)
+        self.assertTrue('H59735 one|1' == seqs.next().name)
+
+    def test03(self):
+        seqs = util.readfasta(self.fobj, name_split = '|')
+        self.assertTrue('H59735 one' == seqs.next().name)
 
 class TestReformat(unittest.TestCase):
     def setUp(self):
@@ -36,10 +55,5 @@ class TestReformat(unittest.TestCase):
         self.fobj.close()
 
     def test01(self):
-        formatted = util.reformat(self.seqs)
-        for block in formatted:
-            for line in block:
-                print line
-        
-        
-        
+        reformatted = util.reformat(self.seqs)
+

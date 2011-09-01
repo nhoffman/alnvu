@@ -55,7 +55,12 @@ All of these examples can be run from within the package directory::
 			    minimum NUMBER of substitutions required to define a
 			    position as variable. [1]
       -n NUMBER, --name-max=NUMBER
-			    maximum width of sequence name
+			    maximum width of sequence name in characters [35]
+      -N CHARACTER, --name-split=CHARACTER
+			    Specify a character delimiting sequence names. By
+			    default, the name of each sequence is the first
+			    whitespace-delimited word. '--name-split=none' causes
+			    the entire line after the '>' to be displayed.
       -w NUMBER, --width=NUMBER
 			    Width of sequence to display in each block in
 			    characters [115]
@@ -75,7 +80,6 @@ All of these examples can be run from within the package directory::
       -q, --quiet           Suppress output of alignment to screen.
       -v, --verbose         increase verbosity of screen output (eg, -v is
 			    verbose, -vv is more so)
-
 
 The default output. Note that columns are numbered (column 8 is the first shown, column 122 is the last)::
 
@@ -121,7 +125,7 @@ Exercising some of the options (show sequence numbers and a consensus; show diff
 
 Write a single-page pdf file::
 
-    % ./av testfiles/10patients_aln.fasta --outfile=test.pdf --quiet --blocks-per-page
+    % ./av testfiles/10patients_aln.fasta --outfile=test.pdf --quiet --blocks-per-page=5
 
 Same as above::
 

@@ -90,6 +90,12 @@ bases (set min_subs using the -s option)""",
         help="maximum width of sequence name in characters [%default]",
         metavar="NUMBER", type='int')
 
+    parser.add_option("-N", "--name-split", dest="name_split",
+        help="""Specify a character delimiting sequence names. By
+        default, the name of each sequence is the first
+        whitespace-delimited word. '--name-split=none' causes the entire line after the '>' to be displayed.""",
+        metavar="CHARACTER")
+
     parser.add_option("-w", "--width", dest="ncol",
         help="Width of sequence to display in each block in characters [%default]",
         metavar="NUMBER", type='int')
@@ -149,7 +155,7 @@ bases (set min_subs using the -s option)""",
     if args:
         ## TODO: support for multiple files?
         with open(args[0], 'rU') as infile:
-            seqs = list(util.readfasta(infile, namesplit = False))
+            seqs = list(util.readfasta(infile, name_split = False if options.name_split == 'none' else options.name_split))
     else:
         seqs = list(util.readfasta(sys.stdin))
 
