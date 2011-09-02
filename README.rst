@@ -83,7 +83,7 @@ All of these examples can be run from within the package directory::
 
 The default output. Note that columns are numbered (column 8 is the first shown, column 122 is the last)::
 
-    % ./av testfiles/10patients_aln.fasta | head -15
+    % ./av testfiles/10patients_aln.fasta
          # 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
          # 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111111
          # 0011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222
@@ -98,6 +98,8 @@ The default output. Note that columns are numbered (column 8 is the first shown,
     M10734 ---------------------------....A....GT........................GATCCATT...GCTT.TGTGTTT..G...........................
     T71041 --------------------------..........AG.......................A.G..GTCT........AGACG.A..------....................TG
     M6161O -----------------------------......T-G..C.....................ATCCTTCGG.A..------------------.......G..............
+    
+    ...
 
 The input file can be provided via stdin::
 
@@ -130,3 +132,28 @@ Write a single-page pdf file::
 Same as above::
 
     % ./av testfiles/10patients_aln.fasta -o test.pdf -q -b 5
+
+And do you know about ``seqmagick``? If not, run, don't walk to
+https://github.com/fhcrc/seqmagick and check it out, so that you can
+do this::
+
+    % seqmagick convert testfiles/ae_like.sto --output-format=fasta - | ./av -cx
+		   # 000000000000000000000000000000000
+		   # 445555555555566666666666666667777
+		   # 990111111155813445566778888991122
+		   # 791123678914209568907050235891215
+      GA05AQR01D2ULR ...............TTGGT.GT..AG...A..
+      GA05AQR01DFGSE ........................T.TAAGT..
+      GA05AQR01CI0QB ...........A.....................
+      GA05AQR01DW22X .TC..G.T.T.......................
+      GA05AQR01A5WF4 ....................A........-T..
+      GA05AQR01BUV2U ---..............................
+      GA05AQR01B1R8I .............T...............CT..
+      GA05AQR02JASPX ........A........................
+      GCX02B001AYSTJ .............................-TA.
+      GCX02B001DP9EQ ............A..........CA.......T
+      GCX02B001AFAY1 ..............G..................
+      GCX02B002J489C ...-......A......................
+      GLKT0ZE01EDLCP AT...ATT.T.......................
+      GLKT0ZE02I8LRD ---GA............................
+    -ref-> CONSENSUS TCTAGCGCGCGGGGACGAACGAGGCGCGCTGGA
