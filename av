@@ -152,12 +152,14 @@ bases (set min_subs using the -s option)""",
         format=logformat,
         level=loglevel)
 
+    name_split = False if options.name_split == 'none' else options.name_split
+    
     if args:
         ## TODO: support for multiple files?
         with open(args[0], 'rU') as infile:
-            seqs = list(util.readfasta(infile, name_split = False if options.name_split == 'none' else options.name_split))
+            seqs = list(util.readfasta(infile, name_split = name_split))
     else:
-        seqs = list(util.readfasta(sys.stdin))
+        seqs = list(util.readfasta(sys.stdin, name_split = name_split))
 
     pages = util.reformat(
         seqs,
