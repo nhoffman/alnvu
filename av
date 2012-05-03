@@ -9,6 +9,7 @@ import argparse
 import pprint
 import time
 
+from alnvu import __version__, exit_on_sigint, exit_on_sigpipe
 import alnvu.util as util
 import alnvu.pdf as pdf
 
@@ -24,7 +25,7 @@ def get_range(rawrange):
 
 def main(arguments):
 
-    parser = argparse.ArgumentParser(description=__doc__, version = "0.9")
+    parser = argparse.ArgumentParser(description=__doc__, version = __version__)
     parser.add_argument(
         "infile", type = argparse.FileType('rU'),
         help = "input file in fasta format (can also read from stdin)")
@@ -122,6 +123,10 @@ the sequence numbers for reference. A value of -1 suppresses this behavior.
         help="Number of aligned blocks of sequence per page [%(default)s]")
     
     args = parser.parse_args(arguments)
+
+    # Ignore SIGPIPE, for head support
+    exit_on_sigpipe()
+    exit_on_sigint()
 
     name_split = False if args.name_split == 'none' else args.name_split
 
