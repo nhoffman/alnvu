@@ -27,8 +27,9 @@ def main(arguments):
 
     parser = argparse.ArgumentParser(description=__doc__, version = __version__)
     parser.add_argument(
-        "infile", type = argparse.FileType('rU'),
-        help = "input file in fasta format (can also read from stdin)")
+        "infile", type = argparse.FileType('rU'), nargs = '?',
+        default = sys.stdin,
+        help = "input file in fasta (reads stdin if missing)")
 
     parser.add_argument("-C", "--case", dest="case",
         help="Convert all characters to a uniform case ('upper','lower')",
