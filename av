@@ -29,12 +29,7 @@ def main(arguments):
     parser.add_argument(
         "infile", type = argparse.FileType('rU'), nargs = '?',
         default = sys.stdin,
-        help = "input file in fasta (reads stdin if missing)")
-
-    parser.add_argument("-C", "--case", dest="case",
-        help="Convert all characters to a uniform case ('upper','lower')",
-        metavar='CASE', choices=['upper','lower'])
-
+        help = "Input file in fasta format (reads stdin if missing)")
 
     parser.add_argument("-q", "--quiet", dest="quiet",
         help="Suppress output of alignment to screen.",
@@ -55,8 +50,8 @@ def main(arguments):
     column_options = parser.add_argument_group('Column selection')
 
     column_options.add_argument("-x", "--exclude-invariant", dest="exclude_invariant",
-        help="""only show columns with at least min_subs non-consensus
-bases (set min_subs using the -s option)""",
+        help="""Show only columns with at least N non-consensus
+bases (set N using the '-a/--min-subs')""", 
         action='store_true', default = False)
 
     column_options.add_argument("-g", "--include-gapcols", dest="include_gapcols",
@@ -65,27 +60,39 @@ bases (set min_subs using the -s option)""",
 
     column_options.add_argument(
         "-r", "--range", dest="rawrange",
-        help="Range of aligned positions to display (eg '-r start,stop')",
+        help="Range of columns to display (eg '-r start,stop')",
         metavar='INTERVAL')
 
-    column_options.add_argument("-s", "--min_subs", dest="min_subs",
-        help="minimum NUMBER of substitutions required to define a position as variable. [%(default)s]",
+    column_options.add_argument("-s", "--min-subs", dest="min_subs",
+        help="Minimum NUMBER of substitutions required to define a position as variable. [%(default)s]",
         metavar="NUMBER", type = int, default = 1)
     
     ## consensus
-    consensus_options = parser.add_argument_group('Consensus calculation and display')
+    consensus_options = parser.add_argument_group('Consensus display and sequence appearance')
 
     consensus_options.add_argument("-c", "--consensus", dest="add_consensus",
-        help="Include show a consensus sequence [%(default)s]",
+        help="Show the consensus sequence [%(default)s]",
         action='store_true', default = False)
 
     consensus_options.add_argument("-d", "--compare-to", dest="compare_to",
         help="""
-Number of the sequence to use as a reference. Nucleotide positions
+Identify the reference sequence. Nucleotide positions
 identical to the reference will be shown as a '.' The default behavior is
 to use the consensus sequence as a reference. Use the -i option to display
-the sequence numbers for reference. A value of -1 suppresses this behavior.
-""", type = int, metavar = 'NUMBER', default = 0)
+the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default = 0)
+
+    consensus_options.add_argument(
+        "-D", "--no-comparison", action = 'store_true',
+        default = False,
+        help = 'Show all bases (ie, suppress comparsion with the reference sequence).')
+    
+    consensus_options.add_argument("-C", "--case", dest="case",
+        help="Convert all characters to a uniform case ('upper','lower')",
+        metavar='CASE', choices=['upper','lower'])
+
+    consensus_options.add_argument(
+        "-G", "--ignore-gaps", dest="include_gaps", action = "store_false",
+        default = True, help = 'Ignore gaps in the calculation of a consensus.')
     
     ## annotation
     name_options = parser.add_argument_group('Sequence annotation')
@@ -95,7 +102,7 @@ the sequence numbers for reference. A value of -1 suppresses this behavior.
         action='store_true', default = False)
 
     name_options.add_argument("-n", "--name-max", dest="name_max",
-        help="maximum width of sequence name in characters [%(default)s]",
+        help="Maximum width of sequence name in characters [%(default)s]",
         metavar="NUMBER", type = int, default = 35)
 
     name_options.add_argument("-N", "--name-split", dest="name_split",
@@ -114,9 +121,11 @@ the sequence numbers for reference. A value of -1 suppresses this behavior.
         help="Font size for pdf output [%(default)s]",
         metavar="NUMBER", default=7, type = int)
 
-    pdf_options.add_argument("-O", "--orientation", dest="orientation",
-        help="Choose from portrait or landscape [%(default)s]",
-        metavar="ORIENTATION", default = 'portrait')
+    pdf_options.add_argument(
+        "-O", "--orientation", dest="orientation",
+        help="Set page orientation; choose from portrait, landscape [%(default)s]",
+        metavar="ORIENTATION", default = 'portrait',
+        choices = ('portrait','landscape'))
 
     pdf_options.add_argument(
         "-b", "--blocks-per-page", dest="blocks_per_page",
@@ -140,12 +149,12 @@ the sequence numbers for reference. A value of -1 suppresses this behavior.
         nrow = args.nrow,
         ncol = args.ncol,
         add_consensus = args.add_consensus,
-        compare_to = args.compare_to,
+        compare_to = -1 if args.no_comparison else args.compare_to,
         exclude_gapcols = not args.include_gapcols,
         exclude_invariant = args.exclude_invariant,
         min_subs = args.min_subs,
         simchar = '.',
-        countGaps = False,
+        countGaps = args.include_gaps,
         case = args.case,
         seqrange = get_range(args.rawrange) if args.rawrange else None,
         seqnums = args.seqnums)
