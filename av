@@ -28,7 +28,7 @@ def main():
 Create formatted sequence alignments with optional pdf output.
 """
 
-    parser = OptionParser(usage=usage, version = "$Id: findDuplicates.py 3354 2010-04-12 18:11:22Z nhoffman $")
+    parser = OptionParser(usage=usage, version = "0.9")
 
     parser.set_defaults(
         add_consensus = False,
