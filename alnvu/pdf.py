@@ -1,7 +1,5 @@
 import os
-import logging
 import sys
-log = logging
 
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch, cm
