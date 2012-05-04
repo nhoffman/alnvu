@@ -9,7 +9,7 @@ from alnvu import util
 
 infile = path.join(config.datadir, '10patients_aln.fasta')
 
-class TestReadFasta(unittest.TestCase):
+class TestFastaObject(unittest.TestCase):
     def test01(self):
         self.assertTrue(path.isfile(infile))
 

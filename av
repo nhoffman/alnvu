@@ -111,7 +111,11 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         whitespace-delimited word. '--name-split=none' causes the entire line after the '>' to be displayed.""",
         metavar="CHARACTER")
 
-
+    name_options.add_argument(
+        "-S", "--sort-by", type = argparse.FileType('rU'), metavar = 'FILE',
+        help = "File containing sequence names defining the sort-order of the sequences in the alignment.")
+    
+    ## pdf options
     pdf_options = parser.add_argument_group('PDF output')
 
     pdf_options.add_argument("-o", "--outfile", dest="outfile",
@@ -141,7 +145,10 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
     name_split = False if args.name_split == 'none' else args.name_split
 
     seqs = list(util.readfasta(args.infile, name_split = name_split))
-
+    if args.sort_by:
+        sortdict = dict((line.strip(), i) for i, line in enumerate(args.sort_by))        
+        seqs.sort(key = lambda seq: (sortdict.get(seq.name), seq.name))
+        
     pages = util.reformat(
         seqs,
         name_min = 10,
