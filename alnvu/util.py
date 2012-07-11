@@ -2,6 +2,18 @@ import copy
 import math
 import itertools
 
+try:
+    from Bio import Phylo
+except ImportError:
+    treeorder = None
+else:
+    def treeorder(infile):
+        tree = Phylo.parse(infile, 'newick').next()
+        tree.ladderize()
+        return [leaf.name for leaf in tree.get_terminals()]
+
+treeorder = None
+    
 def reformat(seqs,
              name_min = 10,
              name_max = 35, #

@@ -8,6 +8,7 @@ import config
 from alnvu import util
 
 infile = path.join(config.datadir, '10patients_aln.fasta')
+treefile = path.join(config.datadir, '10patients_aln.tre')
 
 class TestFastaObject(unittest.TestCase):
     def test01(self):
@@ -57,3 +58,14 @@ class TestReformat(unittest.TestCase):
     def test01(self):
         reformatted = util.reformat(self.seqs)
 
+if util.treeorder:
+    class TestTreeOrder(unittest.TestCase):
+        def setUp(self):
+            self.fobj = open(treefile)
+
+        def tearDown(self):
+            self.fobj.close()
+
+        def test01(self):
+            names = util.treeorder(self.fobj)
+            self.assertTrue(len(names) == 10)

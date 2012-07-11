@@ -112,9 +112,13 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         metavar="CHARACTER")
 
     name_options.add_argument(
-        "-S", "--sort-by", type = argparse.FileType('rU'), metavar = 'FILE',
+        "-S", "--sort-by-name", type = argparse.FileType('rU'), metavar = 'FILE',
         help = "File containing sequence names defining the sort-order of the sequences in the alignment.")
-    
+
+    if util.treeorder:
+        name_options.add_argument(
+            "-T", "--sort-by-tree", type = argparse.FileType('rU'), metavar = 'FILE',
+            help = "File containing a newick-format tree defining the sort-order of the sequences in the alignment (requires biopython).")    
     ## pdf options
     pdf_options = parser.add_argument_group('PDF output')
 
@@ -145,8 +149,16 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
     name_split = False if args.name_split == 'none' else args.name_split
 
     seqs = list(util.readfasta(args.infile, name_split = name_split))
-    if args.sort_by:
-        sortdict = dict((line.strip(), i) for i, line in enumerate(args.sort_by))        
+
+    if args.sort_by_name:
+        sortdict = dict((line.strip(), i) for i, line in enumerate(args.sort_by_name))        
+    elif getattr(args, 'sort_by_tree', None):
+        names = util.treeorder(args.sort_by_tree)
+        sortdict = dict((line.strip(), i) for i, line in enumerate(names))
+    else:
+        sortdict = {}
+
+    if sortdict:
         seqs.sort(key = lambda seq: (sortdict.get(seq.name), seq.name))
         
     pages = util.reformat(
