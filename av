@@ -119,26 +119,28 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         name_options.add_argument(
             "-T", "--sort-by-tree", type = argparse.FileType('rU'), metavar = 'FILE',
             help = "File containing a newick-format tree defining the sort-order of the sequences in the alignment (requires biopython).")    
-    ## pdf options
-    pdf_options = parser.add_argument_group('PDF output')
 
-    pdf_options.add_argument("-o", "--outfile", dest="outfile",
-        help="Write output to a pdf file.")
+    ## pdf options (only if reportlab is installed)
+    if pdf.print_pdf:
+        pdf_options = parser.add_argument_group('PDF output')
 
-    pdf_options.add_argument("-F", "--fontsize", dest="fontsize",
-        help="Font size for pdf output [%(default)s]",
-        metavar="NUMBER", default=7, type = int)
+        pdf_options.add_argument("-o", "--outfile", dest="outfile",
+            help="Write output to a pdf file.")
 
-    pdf_options.add_argument(
-        "-O", "--orientation", dest="orientation",
-        help="Set page orientation; choose from portrait, landscape [%(default)s]",
-        metavar="ORIENTATION", default = 'portrait',
-        choices = ('portrait','landscape'))
+        pdf_options.add_argument("-F", "--fontsize", dest="fontsize",
+            help="Font size for pdf output [%(default)s]",
+            metavar="NUMBER", default=7, type = int)
 
-    pdf_options.add_argument(
-        "-b", "--blocks-per-page", dest="blocks_per_page",
-        metavar="NUMBER", type = int, default = 1,
-        help="Number of aligned blocks of sequence per page [%(default)s]")
+        pdf_options.add_argument(
+            "-O", "--orientation", dest="orientation",
+            help="Set page orientation; choose from portrait, landscape [%(default)s]",
+            metavar="ORIENTATION", default = 'portrait',
+            choices = ('portrait','landscape'))
+
+        pdf_options.add_argument(
+            "-b", "--blocks-per-page", dest="blocks_per_page",
+            metavar="NUMBER", type = int, default = 1,
+            help="Number of aligned blocks of sequence per page [%(default)s]")
     
     args = parser.parse_args(arguments)
 
@@ -184,7 +186,7 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
                 print line.rstrip()
             print ''
 
-    if args.outfile:
+    if getattr(args, 'outfile', None):
         pdf.print_pdf(
             pages,
             outfile = args.outfile,
