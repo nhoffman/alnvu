@@ -122,7 +122,9 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
 
     ## pdf options (only if reportlab is installed)
     if pdf.print_pdf:
-        pdf_options = parser.add_argument_group('PDF output')
+        pdf_options = parser.add_argument_group(
+            'PDF output',
+            'These options require reportlab.')
 
         pdf_options.add_argument("-o", "--outfile", dest="outfile",
             help="Write output to a pdf file.")
