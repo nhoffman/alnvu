@@ -1,6 +1,7 @@
 import copy
 import math
 import itertools
+from itertools import imap
 
 try:
     from Bio import Phylo
@@ -11,8 +12,6 @@ else:
         tree = Phylo.parse(infile, 'newick').next()
         tree.ladderize()
         return [leaf.name for leaf in tree.get_terminals()]
-
-treeorder = None
     
 def reformat(seqs,
              name_min = 10,
@@ -202,6 +201,13 @@ class Seqobj(object):
     def __getslice__(self, start, end):
         return self.seq[start:end]
 
+    def __repr__(self):
+        return '<Seqobj %s>' % (self.name,)
+
+    # def __str__(self):
+    #     return '>%s\n%s\n' % (self.name, self.seq)
+
+    
     
 def readfasta(infile, degap = False, name_split = None):
     """
@@ -212,26 +218,24 @@ def readfasta(infile, degap = False, name_split = None):
       to define seq.name as the entire header line.
     
     """
-
-    has_seqs = False
     
     name, seq = '', ''
-    for line in infile:
+    for line in imap(str.strip, infile):
         if line.startswith('>'):
             if name:
-                has_seqs = True
                 yield Seqobj(name, seq)
+
             if name_split is False:
-                name, seq = line[1:].strip(), ''
+                name, seq = line.lstrip('> '), ''
             else:
-                name, seq = line.strip('>').split(name_split, 1)[0], ''
+                name, seq = line.lstrip('> ').split(name_split, 1)[0], ''                
         else:
-            seq += line.strip().replace('-','') if degap else line.strip()
-            
-    if has_seqs:
-        yield Seqobj(name, seq)
-    else:
+            seq += line.replace('-','') if degap else line
+
+    if not name:
         raise ValueError('no sequences could be read')
+            
+    yield Seqobj(name, seq)
         
 def tabulate( seqList ):
     """calculate the abundance of each character in the columns of

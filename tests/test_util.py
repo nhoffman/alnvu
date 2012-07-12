@@ -47,6 +47,21 @@ class TestReadFasta(unittest.TestCase):
         seqs = util.readfasta(self.fobj, name_split = '|')
         self.assertTrue('H59735 one' == seqs.next().name)
 
+    def test04(self):
+        seqs = util.readfasta(self.fobj)
+        self.assertTrue(len(list(seqs)) == 10)
+
+    def test05(self):
+        with open(path.join(config.datadir, 'one.fasta')) as f:
+            seqs = util.readfasta(f)
+            self.assertTrue(len(list(seqs)) == 1)
+
+    def test06(self):
+        with open(path.join(config.datadir, 'none.fasta')) as f:
+            seqs = util.readfasta(f)
+            self.assertRaises(ValueError, seqs.next)
+
+            
 class TestReformat(unittest.TestCase):
     def setUp(self):
         self.fobj = open(infile)
