@@ -215,8 +215,7 @@ def readfasta(infile, degap = False, name_split = None):
 
     * degap - remove gap characters if True
     * name_split - string on which to split sequence names, or False
-      to define seq.name as the entire header line.
-    
+      to define seq.name as the entire header line.    
     """
     
     name, seq = '', ''
@@ -232,10 +231,8 @@ def readfasta(infile, degap = False, name_split = None):
         else:
             seq += line.replace('-','') if degap else line
 
-    if not name:
-        raise ValueError('no sequences could be read')
-            
-    yield Seqobj(name, seq)
+    if name: 
+        yield Seqobj(name, seq)
         
 def tabulate( seqList ):
     """calculate the abundance of each character in the columns of

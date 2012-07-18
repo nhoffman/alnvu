@@ -59,8 +59,14 @@ class TestReadFasta(unittest.TestCase):
     def test06(self):
         with open(path.join(config.datadir, 'none.fasta')) as f:
             seqs = util.readfasta(f)
-            self.assertRaises(ValueError, seqs.next)
+            self.assertRaises(StopIteration, seqs.next)
 
+    def test07(self):
+        with open(path.join(config.datadir, 'none.fasta')) as f:
+            seqs = util.readfasta(f)
+            self.assertEqual(list(seqs), [])
+
+            
             
 class TestReformat(unittest.TestCase):
     def setUp(self):
