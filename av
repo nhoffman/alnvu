@@ -55,7 +55,7 @@ def main(arguments):
 
     column_options.add_argument("-x", "--exclude-invariant", dest="exclude_invariant",
         help="""Show only columns with at least N non-consensus
-bases (set N using the '-a/--min-subs')""", 
+bases (set N using the '-a/--min-subs')""",
         action='store_true', default = False)
 
     column_options.add_argument("-g", "--include-gapcols", dest="include_gapcols",
@@ -70,7 +70,7 @@ bases (set N using the '-a/--min-subs')""",
     column_options.add_argument("-s", "--min-subs", dest="min_subs",
         help="Minimum NUMBER of substitutions required to define a position as variable. [%(default)s]",
         metavar="NUMBER", type = int, default = 1)
-    
+
     ## consensus
     consensus_options = parser.add_argument_group('Consensus display and sequence appearance')
 
@@ -89,15 +89,15 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         "-D", "--no-comparison", action = 'store_true',
         default = False,
         help = 'Show all bases (ie, suppress comparsion with the reference sequence).')
-    
-    consensus_options.add_argument("-C", "--case", dest="case",
-        help="Convert all characters to a uniform case ('upper','lower')",
-        metavar='CASE', choices=['upper','lower'])
 
     consensus_options.add_argument(
         "-G", "--ignore-gaps", dest="include_gaps", action = "store_false",
         default = True, help = 'Ignore gaps in the calculation of a consensus.')
-    
+
+    consensus_options.add_argument("--simchar",
+        help="Character representing a base identical to the consensus [default '%(default)s']",
+        metavar='CHARACTER', default = '.')
+
     ## annotation
     name_options = parser.add_argument_group('Sequence annotation')
 
@@ -122,7 +122,7 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
     if util.treeorder:
         name_options.add_argument(
             "-T", "--sort-by-tree", type = argparse.FileType('rU'), metavar = 'FILE',
-            help = "File containing a newick-format tree defining the sort-order of the sequences in the alignment (requires biopython).")    
+            help = "File containing a newick-format tree defining the sort-order of the sequences in the alignment (requires biopython).")
 
     ## pdf options (only if reportlab is installed)
     if pdf.print_pdf:
@@ -147,7 +147,7 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
             "-b", "--blocks-per-page", dest="blocks_per_page",
             metavar="NUMBER", type = int, default = 1,
             help="Number of aligned blocks of sequence per page [%(default)s]")
-    
+
     args = parser.parse_args(arguments)
 
     # Ignore SIGPIPE, for head support
@@ -161,9 +161,9 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         if not args.quiet:
             print 'No sequences in input'
         return 0 if args.empty_ok else 1
-    
+
     if args.sort_by_name:
-        sortdict = dict((line.strip(), i) for i, line in enumerate(args.sort_by_name))        
+        sortdict = dict((line.strip(), i) for i, line in enumerate(args.sort_by_name))
     elif getattr(args, 'sort_by_tree', None):
         names = util.treeorder(args.sort_by_tree)
         sortdict = dict((line.strip(), i) for i, line in enumerate(names))
@@ -172,7 +172,7 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
 
     if sortdict:
         seqs.sort(key = lambda seq: (sortdict.get(seq.name), seq.name))
-        
+
     pages = util.reformat(
         seqs,
         name_min = 10,
@@ -180,13 +180,12 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         nrow = args.nrow,
         ncol = args.ncol,
         add_consensus = args.add_consensus,
-        compare_to = -1 if args.no_comparison else args.compare_to,
+        compare_to = None if args.no_comparison else args.compare_to,
         exclude_gapcols = not args.include_gapcols,
         exclude_invariant = args.exclude_invariant,
         min_subs = args.min_subs,
-        simchar = '.',
+        simchar = args.simchar,
         countGaps = args.include_gaps,
-        case = args.case,
         seqrange = get_range(args.rawrange) if args.rawrange else None,
         seqnums = args.seqnums)
 
@@ -207,4 +206,3 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
-

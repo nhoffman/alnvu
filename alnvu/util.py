@@ -12,21 +12,20 @@ else:
         tree = Phylo.parse(infile, 'newick').next()
         tree.ladderize()
         return [leaf.name for leaf in tree.get_terminals()]
-    
+
 def reformat(seqs,
              name_min = 10,
              name_max = 35, #
              nrow = 65, #
              ncol = 70, #
              add_consensus = True, #
-             compare_to = -1, #
+             compare_to = None, #
              exclude_gapcols = True, #
              exclude_invariant = False, #
              min_subs = 1, #
              simchar = '.',
              number_by = 0, #
              countGaps = False,
-             case = None, #
              seqrange = None,
              seqnums = False
              ):
@@ -45,7 +44,7 @@ def reformat(seqs,
       - 0 - (default) each position in each sequence compared to
          corresponding position in consensus and replaced with simchar
       - 1 <= i <= len(seqlist) - compare each sequence to sequence at index (i - 1)
-      - -1 - make no character replacements
+      - None - make no character replacements
     * exclude_gapcols - if True, mask columns with no non-gap characters
     * exclude_invariant - if True, mask columns without minimal polymorphism
     * min_subs -
@@ -53,8 +52,6 @@ def reformat(seqs,
     * number_by - sequence (1-index) according to which numbering should be calculated
       or 0 for the consensus.
     * countGaps - include gaps in calculation of consensus and columns to display
-    * case - None (to change to input), 'upper' (force all to uppercase),
-      'lower' (force all to lowercase)
     * seqrange - optional two-tuple specifying start and ending coordinates (1-index, inclusive)
     * seqnums - show sequence numbers (1-index) to left of name if True
     """
@@ -62,38 +59,36 @@ def reformat(seqs,
     seqlist = [Seqobj(seq.name, seq.seq) for seq in seqs]
     nseqs = len(seqlist)
 
-    # make a dictionary of seq names
-    seqdict = dict([(s.name,s) for s in seqlist])
+    # make a dictionary of seqs keyed by name
+    seqdict = dict([(s.name, s) for s in seqlist])
 
     # a list of dicts
     tabulated = tabulate(seqlist)
 
-    consensus_str = ''.join([consensus(d, countGaps=countGaps) for d in tabulated])
+    consensus_str = ''.join([consensus(d, countGaps=countGaps) for d in tabulated]).upper()
     consensus_name = 'CONSENSUS'
-    if add_consensus:
-        seqlist.append(Seqobj(consensus_name, consensus_str[:]))
 
-    # change case if requested.
-    if case:
-        for seq in seqlist:
-            seq.seq = getattr(seq.seq, case)()
+    if add_consensus:
+        seqlist.append(Seqobj(consensus_name, consensus_str))
 
     # for compare_to and number_by, make a copy of the sequence for
     # comparison because the original sequences will be modified
-    if compare_to >= 0:
-        try:
-            seq_to_compare_to = consensus_str \
-                if compare_to == 0 \
-                else seqlist[compare_to - 1][:]
-        except IndexError:
-            raise ValueError('Error in compare_to="%s": index out of range.' % compare_to)
+    if compare_to is None:
+        compare_to_name, compare_to_str = None, None
+    elif compare_to == 0:
+        compare_to_name, compare_to_str = consensus_name, consensus_str[:]
+    else:
+        _s = seqlist[compare_to - 1]
+        compare_to_name, compare_to_str = _s.name, _s.seq[:]
 
-        for i, seq in enumerate(seqlist): # don't modify reference sequence
-            if (compare_to == 0 and seq.name == consensus_name) or compare_to == i + 1:
-                # if re.match(r'^%s$' % compare_to, seq.name, re.I):
+    # replace bases identical to reference (but don't modify reference sequence)
+    # simchar = None if compare_to is None else simchar
+    if compare_to is not None:
+        for seq in seqlist:
+            if seq.name == compare_to_name:
                 seq.name = '-ref-> ' + seq.name
             else:
-                seq.seq = seqdiff(seq, seq_to_compare_to, simchar)
+                seq.seq = seqdiff(seq, compare_to_str, simchar)
 
     ii = range(len(seqlist[0]))
     mask = [True for i in ii]
@@ -182,7 +177,7 @@ def reformat(seqs,
 
 class Seqobj(object):
     """
-    A minimal container for biological sequences. 
+    A minimal container for biological sequences.
     """
 
     def __init__(self, name, seq = None):
@@ -207,17 +202,17 @@ class Seqobj(object):
     # def __str__(self):
     #     return '>%s\n%s\n' % (self.name, self.seq)
 
-    
-    
+
+
 def readfasta(infile, degap = False, name_split = None):
     """
     Lightweight fasta parser. Returns iterator of Seqobj objects given open file 'infile'.
 
     * degap - remove gap characters if True
     * name_split - string on which to split sequence names, or False
-      to define seq.name as the entire header line.    
+      to define seq.name as the entire header line.
     """
-    
+
     name, seq = '', ''
     for line in imap(str.strip, infile):
         if line.startswith('>'):
@@ -227,13 +222,13 @@ def readfasta(infile, degap = False, name_split = None):
             if name_split is False:
                 name, seq = line.lstrip('> '), ''
             else:
-                name, seq = line.lstrip('> ').split(name_split, 1)[0], ''                
+                name, seq = line.lstrip('> ').split(name_split, 1)[0], ''
         else:
             seq += line.replace('-','') if degap else line
 
-    if name: 
+    if name:
         yield Seqobj(name, seq)
-        
+
 def tabulate( seqList ):
     """calculate the abundance of each character in the columns of
     aligned sequences; tallies are returned as a list of dictionaries
@@ -342,22 +337,22 @@ def count_subs(tabdict, countGaps=False, gap='-'):
     return substitutions
 
 def seqdiff(seq, templateseq, simchar='.'):
-    """Compares seq and templateseq (can be Seq objects or strings) and returns
-a string in which characters in seq that are identical
-at that position to templateseq are replaced with simchar. Return object is the
-length of the shorter of seq and templateseq"""
+    """Compares seq and templateseq (can be Seq objects or strings)
+    and returns a string in which non-gap characters in seq that are
+    identical at that position to templateseq are replaced with
+    simchar. Return object is the length of the shorter of seq and
+    templateseq"""
+
+    if simchar and len(simchar) > 1:
+        raise ValueError('simchar must contain a single character only')
 
     seqstr = seq[:].upper()
     templatestr = templateseq[:].upper()
 
-    lout = []
-    for s,t in zip(seqstr, templatestr):
-        if s == t:
-            lout.append(simchar)
-        else:
-            lout.append(s)
-
-    return ''.join(lout)
+    if simchar:
+        return ''.join(simchar if s==t and s != '-' else s for s,t in zip(seqstr, templatestr))
+    else:
+        return ''.join(s.lower() if s==t else s for s,t in zip(seqstr, templatestr))
 
 def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True):
 
@@ -384,4 +379,3 @@ def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True):
         assert numchars == [fstr % x for x in xrange(1,seqlen+1)]
 
     return [''.join([x[i] for x in numchars]) for i in range(digs)]
-
