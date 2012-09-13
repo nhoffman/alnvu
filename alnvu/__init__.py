@@ -1,8 +1,19 @@
 import signal
 import sys
+from os.path import join, dirname
 
-__version__ = "0.1.0"
-__version_info__ = (0, 1, 0)
+_data = join(dirname(__file__), 'data')
+
+__version__ = '1.'
+
+try:
+    with open(join(_data, 'sha')) as s, open(join(_data, 'ver')) as v:
+        sha = s.read().strip()
+        ver = int(v.read())
+except Exception, e:
+    __version__ += '0'
+else:
+    __version__ += '%04i.%s' % (ver, sha)
 
 def _exit_on_signal(sig, status=None, message=None):
     def exit(sig, frame):
