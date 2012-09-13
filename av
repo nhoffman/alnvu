@@ -8,6 +8,7 @@ import sys
 import argparse
 import pprint
 import time
+import csv
 
 from alnvu import __version__, exit_on_sigint, exit_on_sigpipe
 import alnvu.util as util
@@ -119,6 +120,10 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         "-S", "--sort-by-name", type = argparse.FileType('rU'), metavar = 'FILE',
         help = "File containing sequence names defining the sort-order of the sequences in the alignment.")
 
+    name_options.add_argument(
+        "--rename-from-file", type = argparse.FileType('rU'), metavar = 'FILE',
+        help = "headerless csv file with columns 'old-name','new-name' to use for renaming the input sequences. If provided, renaming occurs immediately after reading the input sequences.")
+
     if util.treeorder:
         name_options.add_argument(
             "-T", "--sort-by-tree", type = argparse.FileType('rU'), metavar = 'FILE',
@@ -161,6 +166,11 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         if not args.quiet:
             print 'No sequences in input'
         return 0 if args.empty_ok else 1
+
+    if args.rename_from_file:
+        namedict = dict(row for row in csv.reader(args.rename_from_file))
+        for seq in seqs:
+            seq.name = namedict.get(seq.name, seq.name)
 
     if args.sort_by_name:
         sortdict = dict((line.strip(), i) for i, line in enumerate(args.sort_by_name))
