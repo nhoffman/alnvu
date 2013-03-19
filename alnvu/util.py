@@ -14,20 +14,14 @@ else:
         return [leaf.name for leaf in tree.get_terminals()]
 
 def reformat(seqs,
-             name_min = 10,
-             name_max = 35, #
-             nrow = 65, #
-             ncol = 70, #
              add_consensus = True, #
              compare_to = None, #
              exclude_gapcols = True, #
              exclude_invariant = False, #
              min_subs = 1, #
              simchar = '.',
-             number_by = 0, #
              countGaps = False,
-             seqrange = None,
-             seqnums = False
+             seqrange = None
              ):
 
     """
@@ -49,8 +43,6 @@ def reformat(seqs,
     * exclude_invariant - if True, mask columns without minimal polymorphism
     * min_subs -
     * simchar - character indicating identity to corresponding position in compare_to
-    * number_by - sequence (1-index) according to which numbering should be calculated
-      or 0 for the consensus.
     * countGaps - include gaps in calculation of consensus and columns to display
     * seqrange - optional two-tuple specifying start and ending coordinates (1-index, inclusive)
     * seqnums - show sequence numbers (1-index) to left of name if True
@@ -58,9 +50,6 @@ def reformat(seqs,
 
     seqlist = [Seqobj(seq.name, seq.seq) for seq in seqs]
     nseqs = len(seqlist)
-
-    # make a dictionary of seqs keyed by name
-    seqdict = dict([(s.name, s) for s in seqlist])
 
     # a list of dicts
     tabulated = tabulate(seqlist)
@@ -111,12 +100,29 @@ def reformat(seqs,
         for seq in seqlist:
             seq.seq = apply_mask(seq)
 
-        try:
-            number_by_str = consensus_str if number_by == 0 else seqlist[number_by - 1][:]
-        except IndexError:
-            raise ValueError('Error in number_by="%s": index out of range.' % number_by)
+        # Here just going to assume numbering by consensus str since the old number_by was never actually
+        # wired up
+        number_by_str = consensus_str
 
         vnumstrs = [apply_mask(s) for s in get_vnumbers(number_by_str, leadingZeros=True)]
+    else:
+        vnumstrs = None
+
+    return (seqlist, vnumstrs, mask)
+
+
+def pagify(seqlist, vnumstrs,
+             name_min = 10,
+             name_max = 35,
+             nrow = 65,
+             ncol = 70,
+             all_numstrs = True,
+             seqnums = False):
+
+    """ This does the work of taking the mostly formatted sequences (still as seqobjs) and joining them
+    together with names for the pdf and stdout outputs."""
+
+    # XXX - todo, improve docs here ^
 
     seqcount = len(seqlist)
 
@@ -147,19 +153,17 @@ def reformat(seqs,
                 msg += 'sequences %s to %s of %s' % \
                 (first+1, last, seqcount)
 
-            if number_by > 0:
-                msg += (' alignment numbered according to %s' % number_by)
-
             if msg:
                 out[-1].append(msg)
 
             this_seqlist = seqlist[first:last]
 
-            if exclude_invariant or exclude_gapcols or number_by > 0:
+            if all_numstrs:
                 # label each position
                 for s in vnumstrs:
                     out[-1].append(
                     fstr % {'count':'','name':'#','seqstr':s[start:stop]} )
+                    print(fstr)
             else:
                 # label position at beginning and end of block
                 half_ncol = int((stop-start)/2)

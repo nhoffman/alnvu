@@ -1,0 +1,39 @@
+
+<html>
+<body>
+<style type="text/css">
+  table.alnvu {font-family: monospace; border-collapse: collapse}
+  table.alnvu th, table.alnvu td {padding: 0}
+  table.alnvu th.seqname, table.alnvu td.seqname {padding-right: 10px}
+  table.alnvu tr.sitenum td.pound {padding-right: 10px; text-align: right}
+
+  /* Auto insert colors for annotations - customize as you like */
+  table.alnvu col.note1 {background-color: lightgreen;}
+</style>
+
+<table class='alnvu'>
+
+  <col class='seqname' />
+  <col />
+  <!-- <col class='note1' /> -->
+
+  <!-- Insert numbering rows /> -->
+  {% for numrow in vnumstrs %}
+  <tr class='sitenum'>
+    <td class='pound'>#</td>
+    <!-- Have to break this into annotations still /> -->
+    <td>{{ numrow }}</td>
+  </tr>
+  {% endfor %}
+
+  <!-- Insert sequences /> -->
+  {% for seq in seqlist %}
+  <tr>
+    <td class='seqname'>{{ seq.name }}</td>
+    <td>{{ seq.seq }}</td>
+  </tr>
+  {% endfor %}
+
+</table>
+</body>
+</html>

@@ -10,17 +10,21 @@ import pprint
 import time
 import csv
 
+from alnvu import util, pdf, html
 from alnvu import __version__, exit_on_sigint, exit_on_sigpipe
-import alnvu.util as util
-import alnvu.pdf as pdf
 
 def get_range(rawrange):
+
+    def handle_badrange():
+        print('Error in "-r/--range %s": argument requires two integers separated by a comma.' % rawrange)
+        sys.exit(1)
 
     try:
         start, stop = [int(x) for x in rawrange.split(',')]
     except ValueError:
-        print('Error in "-r/--range %s": argument requires two integers separated by a comma.' % rawrange)
-        sys.exit(1)
+        handle_badrange()
+    except AttributeError:
+        handle_badrange()
 
     return [start, stop]
 
@@ -129,18 +133,40 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
             "-T", "--sort-by-tree", type = argparse.FileType('rU'), metavar = 'FILE',
             help = "File containing a newick-format tree defining the sort-order of the sequences in the alignment (requires biopython).")
 
+
+    ## Output options for both pdf and html
+    output_options = parser.add_argument_group('Output options for pdf or html output')
+
+    output_options.add_argument("-o", "--outfile", dest="outfile",
+        help="Write output to a pdf file.")
+
+    output_options.add_argument("-F", "--fontsize", dest="fontsize",
+        help="Font size for pdf output [%(default)s]",
+        metavar="NUMBER", default=7, type = int)
+
+    # For decide what output format to use
+    out_format_group = output_options.add_mutually_exclusive_group()
+    out_format_group.add_argument('--stdout', dest='output_format', action='store_const', const='stdout',
+            default='stout', help='write to standard out (default)')
+    # XXX - See if default above does the trick for specifying this as default
+    out_format_group.add_argument('--pdf', dest='output_format', action='store_const', const='pdf',
+        help="Write out to pdf")
+    out_format_group.add_argument('--html', dest='output_format', action='store_const', const='html',
+        help="Write out to html")
+
+    ## Specifically for html output:
+    html_options = parser.add_argument_group('HTML output')
+    html_options.add_argument('-a', '--annotate')
+    html_options.add_argument('--annotation-file', type=argparse.FileType('r'))
+    html_options.add_argument('--table-only', action='store_true', default=False,
+            help="""Don't spit out a full html document, just the alignment table and style tags. Handy if
+            you'd like to include in another document.""")
+
     ## pdf options (only if reportlab is installed)
     if pdf.print_pdf:
         pdf_options = parser.add_argument_group(
             'PDF output',
             'These options require reportlab.')
-
-        pdf_options.add_argument("-o", "--outfile", dest="outfile",
-            help="Write output to a pdf file.")
-
-        pdf_options.add_argument("-F", "--fontsize", dest="fontsize",
-            help="Font size for pdf output [%(default)s]",
-            metavar="NUMBER", default=7, type = int)
 
         pdf_options.add_argument(
             "-O", "--orientation", dest="orientation",
@@ -152,6 +178,7 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
             "-b", "--blocks-per-page", dest="blocks_per_page",
             metavar="NUMBER", type = int, default = 1,
             help="Number of aligned blocks of sequence per page [%(default)s]")
+
 
     args = parser.parse_args(arguments)
 
@@ -183,12 +210,8 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
     if sortdict:
         seqs.sort(key = lambda seq: (sortdict.get(seq.name), seq.name))
 
-    pages = util.reformat(
+    formatted_seqs, vnumstrs, mask = util.reformat(
         seqs,
-        name_min = 10,
-        name_max = args.name_max,
-        nrow = args.nrow,
-        ncol = args.ncol,
         add_consensus = args.add_consensus,
         compare_to = None if args.no_comparison else args.compare_to,
         exclude_gapcols = not args.include_gapcols,
@@ -196,8 +219,23 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         min_subs = args.min_subs,
         simchar = args.simchar,
         countGaps = args.include_gaps,
-        seqrange = get_range(args.rawrange) if args.rawrange else None,
-        seqnums = args.seqnums)
+        seqrange = get_range(args.rawrange) if args.rawrange else None)
+
+    if args.output_format == 'html':
+        html.print_html(formatted_seqs, vnumstrs, mask,
+            outfile = args.outfile,
+            fontsize = args.fontsize,
+            seqnums = args.seqnums)
+
+    all_numstrs = args.exclude_invariant or not args.include_gapcols
+
+    pages = util.pagify(formatted_seqs, vnumstrs,
+        nrow = args.nrow,
+        ncol = args.ncol,
+        name_min = 10,
+        name_max = args.name_max,
+        seqnums = args.seqnums,
+        all_numstrs=all_numstrs)
 
     if not args.quiet:
         for page in pages:
@@ -205,7 +243,7 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
                 print line.rstrip()
             print ''
 
-    if getattr(args, 'outfile', None):
+    if args.output_format == 'pdf':
         pdf.print_pdf(
             pages,
             outfile = args.outfile,
