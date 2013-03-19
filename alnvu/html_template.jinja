@@ -1,4 +1,3 @@
-
 <html>
 <body>
 <style type="text/css">
@@ -7,32 +6,64 @@
   table.alnvu th.seqname, table.alnvu td.seqname {padding-right: 10px}
   table.alnvu tr.sitenum td.pound {padding-right: 10px; text-align: right}
 
-  /* Auto insert colors for annotations - customize as you like */
-  table.alnvu col.note1 {background-color: lightgreen;}
+  {# Auto insert colors for annotations #}
+  /* Column color specifications - Feel free to modify as you wish */
+  {% if annotations -%}
+  {% for _, group, color  in annotations.iterate(seqlist[0]) -%}
+  {% if group -%}
+  table.alnvu col.{{group}} {background-color: {{color}} }
+  {%- endif %}
+  {%- endfor %}
+  {%- endif %}
 </style>
 
 <table class='alnvu'>
 
   <col class='seqname' />
+  {% if annotations -%}
+  {% for _, group, _  in annotations.iterate(seqlist[0]) -%}
+  {% if group -%}
+  <col class="{{group}}" />
+  {% else -%}
   <col />
-  <!-- <col class='note1' /> -->
+  {%- endif %}
+  {%- endfor %}
+  {%- else %}
+  {# If no annotations, just insert directly #}
+  <col />
+  {%- endif %}
 
-  <!-- Insert numbering rows /> -->
-  {% for numrow in vnumstrs %}
+  {# Insert numbering rows #}
+  {% for numrow in vnumstrs -%}
   <tr class='sitenum'>
     <td class='pound'>#</td>
-    <!-- Have to break this into annotations still /> -->
+    {% if annotations -%}
+      {% for block, _, _  in annotations.iterate(numrow) -%}
+      {# If annotations, insert a column for each block #}
+      <td>{{ block }}</td> 
+      {%- endfor %}
+    {% else -%}
+    {# If no annotations, just insert directly #}
     <td>{{ numrow }}</td>
+    {%- endif %}
   </tr>
-  {% endfor %}
+  {%- endfor %}
 
-  <!-- Insert sequences /> -->
-  {% for seq in seqlist %}
+  {# Insert sequences #}
+  {% for seq in seqlist -%}
   <tr>
     <td class='seqname'>{{ seq.name }}</td>
+    {% if annotations -%}
+      {% for block, _, _  in annotations.iterate(seq.seq) -%}
+      {# If annotations, insert a column for each block #}
+      <td>{{ block }}</td> 
+      {%- endfor %}
+    {%- else %}
+    {# If no annotations, just insert directly #}
     <td>{{ seq.seq }}</td>
+    {%- endif %}
   </tr>
-  {% endfor %}
+  {%- endfor %}
 
 </table>
 </body>

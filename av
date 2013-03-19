@@ -222,8 +222,14 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         seqrange = get_range(args.rawrange) if args.rawrange else None)
 
     if args.output_format == 'html':
+        if args.annotation_file:
+            annotations = html.AnnotationSet.from_mapping_file(args.annotation_file, mask)
+        else:
+            annotations = None
+
         html.print_html(formatted_seqs, vnumstrs, mask,
             outfile = args.outfile,
+            annotations = annotations,
             fontsize = args.fontsize,
             seqnums = args.seqnums)
 
