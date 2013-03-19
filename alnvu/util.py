@@ -93,20 +93,13 @@ def reformat(seqs,
         mask1 = [count_subs(d, countGaps=countGaps) >= min_subs for d in tabulated]
         mask = [m and m1 for m,m1 in zip(mask, mask1)]
 
+    def apply_mask(instr):
+        return ''.join(c for c,m in zip(instr, mask) if m)
+    number_by_str = consensus_str
+    vnumstrs = [apply_mask(s) for s in get_vnumbers(number_by_str, leadingZeros=True)]
     if seqrange or exclude_invariant or exclude_gapcols:
-        def apply_mask(instr):
-            return ''.join(c for c,m in zip(instr, mask) if m)
-
         for seq in seqlist:
             seq.seq = apply_mask(seq)
-
-        # Here just going to assume numbering by consensus str since the old number_by was never actually
-        # wired up
-        number_by_str = consensus_str
-
-        vnumstrs = [apply_mask(s) for s in get_vnumbers(number_by_str, leadingZeros=True)]
-    else:
-        vnumstrs = None
 
     return (seqlist, vnumstrs, mask)
 
