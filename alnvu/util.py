@@ -1,4 +1,3 @@
-import copy
 import math
 import itertools
 from itertools import imap
@@ -156,7 +155,6 @@ def pagify(seqlist, vnumstrs,
                 for s in vnumstrs:
                     out[-1].append(
                     fstr % {'count':'','name':'#','seqstr':s[start:stop]} )
-                    print(fstr)
             else:
                 # label position at beginning and end of block
                 half_ncol = int((stop-start)/2)

@@ -6,8 +6,6 @@ Create formatted sequence alignments with optional pdf output.
 
 import sys
 import argparse
-import pprint
-import time
 import csv
 
 from alnvu import util, pdf, html
