@@ -12,12 +12,13 @@ else:
         tree.ladderize()
         return [leaf.name for leaf in tree.get_terminals()]
 
+
 def reformat(seqs,
-             add_consensus = True, #
-             compare_to = None, #
-             exclude_gapcols = True, #
-             exclude_invariant = False, #
-             min_subs = 1, #
+             add_consensus = True,
+             compare_to = None,
+             exclude_gapcols = True,
+             exclude_invariant = False,
+             min_subs = 1,
              simchar = '.',
              countGaps = False,
              seqrange = None
@@ -69,33 +70,37 @@ def reformat(seqs,
         _s = seqlist[compare_to - 1]
         compare_to_name, compare_to_str = _s.name, _s.seq[:]
 
-    # replace bases identical to reference (but don't modify reference sequence)
-    # simchar = None if compare_to is None else simchar
+    # replace bases identical to reference but don't modify reference sequence
     if compare_to is not None:
         for seq in seqlist:
             if seq.name == compare_to_name:
                 seq.name = '-ref-> ' + seq.name
             else:
                 seq.seq = seqdiff(seq, compare_to_str, simchar)
+                # seq.seq = seqdiff(
+                #     seq, compare_to_str, simchar = None,
+                #     wrap_variant="<span class='variant'>{}</span>")
 
     ii = range(len(seqlist[0]))
     mask = [True for i in ii]
     if seqrange:
         start, stop = seqrange
-        mask = [start <= i+1 <= stop for i in ii]
+        mask = [start <= i + 1 <= stop for i in ii]
 
     if exclude_gapcols:
-        mask1 = [d.get('-',0) != nseqs for d in tabulated]
-        mask = [m and m1 for m,m1 in zip(mask, mask1)]
+        mask1 = [d.get('-', 0) != nseqs for d in tabulated]
+        mask = [m and m1 for m, m1 in zip(mask, mask1)]
 
     if exclude_invariant:
-        mask1 = [count_subs(d, countGaps=countGaps) >= min_subs for d in tabulated]
-        mask = [m and m1 for m,m1 in zip(mask, mask1)]
+        mask1 = [count_subs(d, countGaps=countGaps) >= min_subs
+                 for d in tabulated]
+        mask = [m and m1 for m, m1 in zip(mask, mask1)]
 
     def apply_mask(instr):
-        return ''.join(c for c,m in zip(instr, mask) if m)
+        return ''.join(c for c, m in zip(instr, mask) if m)
     number_by_str = consensus_str
-    vnumstrs = [apply_mask(s) for s in get_vnumbers(number_by_str, leadingZeros=True)]
+    vnumstrs = [apply_mask(s)
+                for s in get_vnumbers(number_by_str, leadingZeros=True)]
     if seqrange or exclude_invariant or exclude_gapcols:
         for seq in seqlist:
             seq.seq = apply_mask(seq)
@@ -331,11 +336,12 @@ def count_subs(tabdict, countGaps=False, gap='-'):
 
     return substitutions
 
+
 def seqdiff(seq, templateseq, simchar='.'):
     """Compares seq and templateseq (can be Seq objects or strings)
     and returns a string in which non-gap characters in seq that are
     identical at that position to templateseq are replaced with
-    simchar. Return object is the length of the shorter of seq and
+    simchar. Returned string is the length of the shorter of seq and
     templateseq"""
 
     if simchar and len(simchar) > 1:
@@ -345,9 +351,40 @@ def seqdiff(seq, templateseq, simchar='.'):
     templatestr = templateseq[:].upper()
 
     if simchar:
-        return ''.join(simchar if s==t and s != '-' else s for s,t in zip(seqstr, templatestr))
+        def diff(s, t):
+            return simchar if s == t and s != '-' else s
     else:
-        return ''.join(s.lower() if s==t else s for s,t in zip(seqstr, templatestr))
+        def diff(s, t):
+            return s.lower() if s == t else s
+
+    return ''.join(diff(s, t) for s, t in zip(seqstr, templatestr))
+
+
+# def seqdiff(seq, templateseq, simchar='.', wrap_variant=None):
+#     """Compares seq and templateseq (can be Seq objects or strings)
+#     and returns a string in which non-gap characters in seq that are
+#     identical at that position to templateseq are replaced with
+#     simchar. Returned string is the length of the shorter of seq and
+#     templateseq"""
+
+#     if simchar and len(simchar) > 1:
+#         raise ValueError('simchar must contain a single character only')
+
+#     seqstr = seq[:].upper()
+#     templatestr = templateseq[:].upper()
+
+#     if simchar:
+#         def diff(s, t):
+#             return simchar if s == t and s != '-' else s
+#     elif wrap_variant:
+#         def diff(s, t):
+#             return wrap_variant.format(s) if s == t else s
+#     else:
+#         def diff(s, t):
+#             return s.lower() if s == t else s
+
+#     return ''.join(diff(s, t) for s, t in zip(seqstr, templatestr))
+
 
 def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True):
 
