@@ -21,7 +21,8 @@ def reformat(seqs,
              min_subs = 1,
              simchar = '.',
              countGaps = False,
-             seqrange = None
+             seqrange = None,
+             reference_top=False
              ):
 
     """
@@ -46,6 +47,7 @@ def reformat(seqs,
     * countGaps - include gaps in calculation of consensus and columns to display
     * seqrange - optional two-tuple specifying start and ending coordinates (1-index, inclusive)
     * seqnums - show sequence numbers (1-index) to left of name if True
+    * reference_top - put reference/consensus sequence at top instead of bottom
     """
 
     seqlist = [Seqobj(seq.name, seq.seq) for seq in seqs]
@@ -58,7 +60,11 @@ def reformat(seqs,
     consensus_name = 'CONSENSUS'
 
     if add_consensus:
-        seqlist.append(Seqobj(consensus_name, consensus_str))
+        consensus_seq = Seqobj(consensus_name, consensus_str)
+        if reference_top:
+            seqlist.insert(0, consensus_seq)
+        else:
+            seqlist.append(consensus_seq)
 
     # for compare_to and number_by, make a copy of the sequence for
     # comparison because the original sequences will be modified
@@ -75,6 +81,7 @@ def reformat(seqs,
         for seq in seqlist:
             if seq.name == compare_to_name:
                 seq.name = '-ref-> ' + seq.name
+                seq.reference = True
             else:
                 seq.seq = seqdiff(seq, compare_to_str, simchar)
                 # seq.seq = seqdiff(
@@ -183,6 +190,7 @@ class Seqobj(object):
     def __init__(self, name, seq = None):
         self.name = name
         self.seq = seq or ''
+        self.reference = False
 
     def __len__(self):
         return len(self.seq)

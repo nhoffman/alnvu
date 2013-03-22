@@ -101,6 +101,9 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         help="Character representing a base identical to the consensus [default '%(default)s']",
         metavar='CHARACTER', default = '.')
 
+    consensus_options.add_argument('-t', '--reference-top', action='store_true', default=False,
+        help="Would like the reference/consensus sequence on the top or the bottom?")
+
     ## annotation
     name_options = parser.add_argument_group('Sequence annotation')
 
@@ -136,7 +139,7 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
     output_options = parser.add_argument_group('Output options for pdf or html output')
 
     output_options.add_argument("-o", "--outfile", dest="outfile",
-        help="Write output to a pdf file.")
+        help="Write output to a file.")
 
     output_options.add_argument("-F", "--fontsize", dest="fontsize",
         help="Font size for pdf output [%(default)s]",
@@ -147,9 +150,9 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
     out_format_group.add_argument('--stdout', dest='output_format', action='store_const', const='stdout',
             default='stout', help='write to standard out (default)')
     # XXX - See if default above does the trick for specifying this as default
-    out_format_group.add_argument('--pdf', dest='output_format', action='store_const', const='pdf',
+    out_format_group.add_argument('-P', '--pdf', dest='output_format', action='store_const', const='pdf',
         help="Write out to pdf")
-    out_format_group.add_argument('--html', dest='output_format', action='store_const', const='html',
+    out_format_group.add_argument('-H', '--html', dest='output_format', action='store_const', const='html',
         help="Write out to html")
 
     ## Specifically for html output:
@@ -217,7 +220,8 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         min_subs = args.min_subs,
         simchar = args.simchar,
         countGaps = args.include_gaps,
-        seqrange = get_range(args.rawrange) if args.rawrange else None)
+        seqrange = get_range(args.rawrange) if args.rawrange else None,
+        reference_top = args.reference_top)
 
     if args.output_format == 'html':
         if args.annotation_file:

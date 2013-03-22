@@ -3,8 +3,10 @@
 <style type="text/css">
   table.alnvu {font-family: monospace; border-collapse: collapse}
   table.alnvu th, table.alnvu td {padding: 0}
-  table.alnvu th.seqname, table.alnvu td.seqname {padding-right: 10px}
+  table.alnvu tr.sitenum td {background-color: white}
   table.alnvu tr.sitenum td.pound {padding-right: 10px; text-align: right}
+  table.alnvu tr.reference td {font-weight: bold}
+  table.alnvu th.seqname, table.alnvu td.seqname {padding-right: 10px}
 
   {# Auto insert colors for annotations #}
   /* Column color specifications - Feel free to modify as you wish */
@@ -13,7 +15,8 @@
   {% if group -%}
   table.alnvu col.{{group}} {background-color: {{color}} }
   {%- endif %}
-  {%- endfor %}
+  {# Want newlines between #}
+  {% endfor %}
   {%- endif %}
 </style>
 
@@ -27,7 +30,7 @@
   {% else -%}
   <col />
   {%- endif %}
-  {%- endfor %}
+  {% endfor %}
   {%- else %}
   {# If no annotations, just insert directly #}
   <col />
@@ -47,11 +50,12 @@
     <td>{{ numrow }}</td>
     {%- endif %}
   </tr>
-  {%- endfor %}
+  {% endfor %}
 
   {# Insert sequences #}
   {% for seq in seqlist -%}
-  <tr>
+  <tr {{ "class='reference'" if seq.reference }}>
+    {# add 'reference' class if the sequence is the reference sequence. Used for bolding. #}
     <td class='seqname'>{{ seq.name }}</td>
     {% if annotations -%}
       {% for block, _, _  in annotations.iterate(seq.seq) -%}
@@ -63,7 +67,7 @@
     <td>{{ seq.seq }}</td>
     {%- endif %}
   </tr>
-  {%- endfor %}
+  {% endfor %}
 
 </table>
 </body>
