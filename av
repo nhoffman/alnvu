@@ -81,16 +81,16 @@ bases (set N using the '-a/--min-subs')""",
         help="Show the consensus sequence [%(default)s]",
         action='store_true', default = False)
 
-    consensus_options.add_argument("-d", "--compare-to", dest="compare_to",
-        help="""
-Identify the reference sequence. Nucleotide positions
-identical to the reference will be shown as a '.' The default behavior is
-to use the consensus sequence as a reference. Use the -i option to display
-the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default = 0)
+    consensus_options.add_argument(
+        "-d", "--compare-to", dest="compare_to",
+        help="""Identify the reference sequence by name. Nucleotide
+        positions identical to the reference will be replaced with
+        `--simchar`. The default behavior is to use the consensus
+        sequence as a reference.""", metavar='NAME')
 
     consensus_options.add_argument(
-        "-D", "--no-comparison", action = 'store_true',
-        default = False,
+        "-D", "--no-comparison", action = 'store_false', dest='compare',
+        default = True,
         help = 'Show all bases (ie, suppress comparsion with the reference sequence).')
 
     consensus_options.add_argument(
@@ -98,8 +98,9 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
         default = True, help = 'Ignore gaps in the calculation of a consensus.')
 
     consensus_options.add_argument("--simchar",
-        help="Character representing a base identical to the consensus [default '%(default)s']",
-        metavar='CHARACTER', default = '.')
+        help="""Character representing a base identical to the consensus. Specify
+        the empty string to identify differences using lower case [default
+        '%(default)s']""", metavar='CHARACTER', default = '.')
 
     consensus_options.add_argument('-t', '--reference-top', action='store_true', default=False,
         help="Would like the reference/consensus sequence on the top or the bottom?")
@@ -214,7 +215,8 @@ the sequence numbers for reference.""", type = int, metavar = 'NUMBER', default 
     formatted_seqs, vnumstrs, mask = util.reformat(
         seqs,
         add_consensus = args.add_consensus,
-        compare_to = None if args.no_comparison else args.compare_to,
+        compare = args.compare,
+        compare_to = args.compare_to,
         exclude_gapcols = not args.include_gapcols,
         exclude_invariant = args.exclude_invariant,
         min_subs = args.min_subs,

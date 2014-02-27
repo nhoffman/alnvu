@@ -15,6 +15,7 @@ else:
 
 def reformat(seqs,
              add_consensus = True,
+             compare=True,
              compare_to = None,
              exclude_gapcols = True,
              exclude_invariant = False,
@@ -30,16 +31,10 @@ def reformat(seqs,
     lists of strings; the outer list corresponds to pages.
 
     * seqs - list of objects with attributes 'name' and 'seq'
-    * name_min - minimum number of characters to allot to sequence names
-    * name_max - maximum number of characters to allot to sequence names
-    * nrow - number of lines per page
-    * ncol - width in characters of sequence on each line
     * add_consensus - If True, include consensus sequence.
-    * compare_to - may take the following values:
-      - 0 - (default) each position in each sequence compared to
-         corresponding position in consensus and replaced with simchar
-      - 1 <= i <= len(seqlist) - compare each sequence to sequence at index (i - 1)
-      - None - make no character replacements
+    * compare - if True (default), compare each character to corresponding position
+      in the sequence specified by `compare_to` and replace with `simchar` if identical.
+    * compare_to - Name of a reference sequence. None (the default) specifies the consensus.
     * exclude_gapcols - if True, mask columns with no non-gap characters
     * exclude_invariant - if True, mask columns without minimal polymorphism
     * min_subs -
@@ -66,21 +61,19 @@ def reformat(seqs,
         else:
             seqlist.append(consensus_seq)
 
-    # for compare_to and number_by, make a copy of the sequence for
-    # comparison because the original sequences will be modified
-    if compare_to is None:
-        compare_to_name, compare_to_str = None, None
-    elif compare_to == 0:
-        compare_to_name, compare_to_str = consensus_name, consensus_str[:]
-    else:
-        _s = seqlist[compare_to - 1]
-        compare_to_name, compare_to_str = _s.name, _s.seq[:]
+    if compare:
+        # replace bases identical to reference; make a copy of the
+        # sequence for comparison because the original sequences will
+        # be modified.
+        if compare_to is None:
+            compare_to_name, compare_to_str = consensus_name, consensus_str[:]
+        else:
+            _s = seqlist[[s.name for s in seqlist].index(compare_to)]
+            compare_to_name, compare_to_str = _s.name, _s.seq[:]
 
-    # replace bases identical to reference but don't modify reference sequence
-    if compare_to is not None:
         for seq in seqlist:
             if seq.name == compare_to_name:
-                seq.name = '-ref-> ' + seq.name
+                seq.name = '==REF==> ' + seq.name
                 seq.reference = True
             else:
                 seq.seq = seqdiff(seq, compare_to_str, simchar)
@@ -350,20 +343,21 @@ def seqdiff(seq, templateseq, simchar='.'):
     and returns a string in which non-gap characters in seq that are
     identical at that position to templateseq are replaced with
     simchar. Returned string is the length of the shorter of seq and
-    templateseq"""
+    templateseq."""
 
     if simchar and len(simchar) > 1:
         raise ValueError('simchar must contain a single character only')
 
-    seqstr = seq[:].upper()
-    templatestr = templateseq[:].upper()
-
     if simchar:
+        seqstr = seq[:].upper()
+        templatestr = templateseq[:].upper()
         def diff(s, t):
             return simchar if s == t and s != '-' else s
     else:
+        seqstr = seq[:].lower()
+        templatestr = templateseq[:].lower()
         def diff(s, t):
-            return s.lower() if s == t else s
+            return s.upper() if s == t else s
 
     return ''.join(diff(s, t) for s, t in zip(seqstr, templatestr))
 

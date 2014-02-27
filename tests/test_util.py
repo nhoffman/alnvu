@@ -66,18 +66,49 @@ class TestReadFasta(unittest.TestCase):
             seqs = util.readfasta(f)
             self.assertEqual(list(seqs), [])
 
-            
-            
+def render(seqlist, vnumstrs):
+    for page in util.pagify(seqlist, vnumstrs, ncol=150):
+        print ''
+        for line in page:
+            print line.rstrip()
+        break
+
+def render(*args):
+    pass
+
+
 class TestReformat(unittest.TestCase):
     def setUp(self):
         self.fobj = open(infile)
         self.seqs = util.readfasta(self.fobj)
-        
+
     def tearDown(self):
         self.fobj.close()
 
     def test01(self):
-        reformatted = util.reformat(self.seqs)
+        seqlist, vnumstrs, mask = util.reformat(self.seqs)
+        render(seqlist, vnumstrs)
+
+    def test02(self):
+        seqlist, vnumstrs, mask = util.reformat(self.seqs, compare=False)
+        render(seqlist, vnumstrs)
+
+    def test03(self):
+        seqlist, vnumstrs, mask = util.reformat(self.seqs, compare_to='H59735')
+        render(seqlist, vnumstrs)
+
+    def test04(self):
+        seqlist, vnumstrs, mask = util.reformat(self.seqs, simchar=' ')
+        render(seqlist, vnumstrs)
+
+    def test05(self):
+        seqlist, vnumstrs, mask = util.reformat(self.seqs, simchar='')
+        render(seqlist, vnumstrs)
+
+    def test06(self):
+        seqlist, vnumstrs, mask = util.reformat(self.seqs, exclude_invariant=True)
+        render(seqlist, vnumstrs)
+
 
 if util.treeorder:
     class TestTreeOrder(unittest.TestCase):
