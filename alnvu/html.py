@@ -1,10 +1,12 @@
 #from collections import OrderedDict
-from jinja2 import Template
-import os
 import csv
+
 import colorbrewer
+from jinja2 import Environment, PackageLoader
 
 default_brewer = colorbrewer.Spectral
+
+_env = Environment(loader=PackageLoader(__package__, 'data'))
 
 
 #HEX = '0123456789abcdef'
@@ -15,24 +17,13 @@ def rgb_from_triplet(triplet):
 
 def load_template():
     """ Loads the template file, ready for rendering. """
-    # First just construct the path for the template file
-    abspath = os.path.abspath(__file__)
-    path_parts = abspath.split('/')[:-1]
-    path_parts.insert(0, '/')
-    path_parts.append('html_template.jinja')
-    template_fn = os.path.join(*path_parts)
-    # Then create template object and return
-    text = file(template_fn).read()
-    return Template(text)
+    return _env.get_template('html_template.jinja')
 
 def print_html(formatted_seqs, vnumstrs, mask, outfile, annotations=None, fontsize=12, seqnums=None):
     # XXX - Uhh... what are seqnums?
     render_dict = dict(seqlist=formatted_seqs, vnumstrs=vnumstrs, mask=mask, annotations=annotations)
-    handle = file(outfile, 'w')
-    template = load_template()
-    rendered = template.render(render_dict)
-    handle.write(rendered)
-    handle.close()
+    with open(outfile, 'w') as handle:
+        load_template().stream(render_dict).dump(handle)
 
 def parse_mapping_file(mapping_handle):
     """ Parses into a dict map of col numbers to groups """
@@ -60,7 +51,7 @@ class AnnotationSet(object):
         """ Convenience method for loading directly from files. """
         mapping = parse_mapping_file(handle)
         return cls(mapping, mask, color_mapping)
-            
+
     def __init__(self, col_mapping, mask, color_mapping=None, brewer=default_brewer):
         """ col_mapping is a mapping of 1-index based columns to group names. mask is the mask to be applied
         to sequences and number string rows. """

@@ -43,7 +43,7 @@
     {% if annotations -%}
       {% for block, _, _  in annotations.iterate(numrow) -%}
       {# If annotations, insert a column for each block #}
-      <td>{{ block }}</td> 
+      <td>{{ block }}</td>
       {%- endfor %}
     {% else -%}
     {# If no annotations, just insert directly #}
@@ -60,7 +60,7 @@
     {% if annotations -%}
       {% for block, _, _  in annotations.iterate(seq.seq) -%}
       {# If annotations, insert a column for each block #}
-      <td>{{ block }}</td> 
+      <td>{{ block }}</td>
       {%- endfor %}
     {%- else %}
     {# If no annotations, just insert directly #}
