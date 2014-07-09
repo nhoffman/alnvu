@@ -5,6 +5,15 @@
 ``alnvu`` makes a multiple alignment of biological sequences more
 easily readable by condensing it and highlighting variability.
 
+
+authors
+=======
+
+ * Noah Hoffman
+ * Chris Small
+ * Connor McCoy
+
+
 dependencies
 ============
 
@@ -16,14 +25,28 @@ Optional:
 
  * ``reportlab`` (http://www.reportlab.com/software/opensource/) for pdf output.
  * ``biopython`` (http://biopython.org/) to sort alignments in tree order.
+ * ``Jinja2`` (http://jinja.pocoo.org/) for rendering html templates.
+
 
 installation
 ============
 
+Installation is easiest using ``pip``::
+
+  pip install alnvu
+
+To install from the sources on GitHub, first clone the repository.
+
 Using ``setup.py``::
 
-    cd alnvu
-    python setup.py install
+  cd alnvu
+  python setup.py install
+
+Using ``pip``::
+
+  cd alnvu
+  pip install .
+
 
 examples
 ========
