@@ -5,7 +5,11 @@
 PyPi
 ====
 
-Make sure to update the __version__ variable in the bioscons/__init__.py file.
+Make sure to update the __version__ variable in the
+bioscons/__init__.py file, then add a tag with the corresponding
+version, eg::
+
+  git tag -a -m 'first release on pipy' v0.1.0
 
 If you have not done so create a ~/.pypirc file containing your PyPI
 credentials::
