@@ -7,6 +7,7 @@ Create formatted sequence alignments with optional pdf output.
 import sys
 import argparse
 import csv
+import textwrap
 
 from alnvu import util, pdf, html
 from alnvu import __version__, exit_on_sigint, exit_on_sigpipe
@@ -137,7 +138,13 @@ bases (set N using the '-a/--min-subs')""",
 
 
     ## Output options for both pdf and html
-    output_options = parser.add_argument_group('Output options for pdf or html output')
+    output_options = parser.add_argument_group(
+        'Output options for pdf or html output',
+        description=textwrap.dedent("""
+        Note that --annotation-file specifies columns that should be
+        colored in the html output. This is a csv file with
+        headers ("group", "col") where each row identifies a label (group)
+        and a corresponding column (1-indexed)."""))
 
     output_options.add_argument("-o", "--outfile", dest="outfile",
         help="Write output to a file.")
@@ -158,7 +165,6 @@ bases (set N using the '-a/--min-subs')""",
 
     ## Specifically for html output:
     html_options = parser.add_argument_group('HTML output')
-    html_options.add_argument('-a', '--annotate')
     html_options.add_argument('--annotation-file', type=argparse.FileType('r'))
     html_options.add_argument('--table-only', action='store_true', default=False,
             help="""Don't spit out a full html document, just the alignment table and style tags. Handy if
