@@ -8,6 +8,24 @@
   table.alnvu tr.reference td {font-weight: bold}
   table.alnvu th.seqname, table.alnvu td.seqname {padding-right: 10px}
 
+  {# character color definitions #}
+  {% if colors %}
+    span {background-color: black;color: white;}
+    {% for key, value in colors.items() %}
+      {# classes are case-insensitive, so work around that #}
+      {% if key == key|upper %}
+        span.{{key}}up {color: {{value}};}
+      {% else %}
+        span.{{key}} {color: {{value}};}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+//  span {background-color: black;color: white;}
+//  span.a, span.A {color: #5050ff;}
+//  span.t, span.T {color: #e6e600;}
+//  span.g, seq.G {color: #00c000;}
+//  span.c, span.C {color: #e00000;}
+
   {# Auto insert colors for annotations #}
   /* Column color specifications - Feel free to modify as you wish */
   {% if annotations -%}
@@ -62,8 +80,11 @@
       {# If annotations, insert a column for each block #}
       <td>{{ block }}</td>
       {%- endfor %}
+    {%- elif colors %}
+      {# Set character colors (including uppercase, if specified) #}
+      <td>{{ seq.seq|regex_replace('(.)', '<span class="\\1">\\1</span>')|regex_replace('(class=")([A-Z])(")', '\\1\\2up\\3') }}</td>
     {%- else %}
-    {# If no annotations, just insert directly #}
+    {# If no annotations or colors, just insert directly #}
     <td>{{ seq.seq }}</td>
     {%- endif %}
   </tr>
