@@ -1,5 +1,7 @@
+{% if not tableonly %}
 <html>
 <body>
+{% endif %}
 <style type="text/css">
   table.alnvu {font-family: monospace; border-collapse: collapse}
   table.alnvu th, table.alnvu td {padding: 0}
@@ -86,5 +88,8 @@
   {% endfor %}
 
 </table>
+
+{% if not tableonly %}
 </body>
 </html>
+{% endif %}

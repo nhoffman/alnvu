@@ -254,7 +254,8 @@ bases (set N using the '-a/--min-subs')""",
                         annotations=annotations,
                         fontsize=args.fontsize,
                         seqnums=args.seqnums,
-                        charcolors=char_colors)
+                        charcolors=char_colors,
+                        tableonly=args.table_only)
 
     all_numstrs = args.exclude_invariant or not args.include_gapcols
 

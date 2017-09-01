@@ -28,10 +28,10 @@ def load_template():
     return _env.get_template('html_template.jinja')
 
 
-def print_html(formatted_seqs, vnumstrs, mask, outfile, annotations=None, fontsize=12, seqnums=None, charcolors=None):
+def print_html(formatted_seqs, vnumstrs, mask, outfile, annotations=None, fontsize=12, seqnums=None, charcolors=None, tableonly=False):
     # XXX - Uhh... what are seqnums?
     render_dict = dict(seqlist=formatted_seqs, vnumstrs=vnumstrs,
-                       mask=mask, annotations=annotations, colors=charcolors)
+                       mask=mask, annotations=annotations, colors=charcolors, tableonly=tableonly)
     with open(outfile, 'w') as handle:
         load_template().stream(render_dict).dump(handle)
 
