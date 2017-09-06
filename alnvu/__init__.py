@@ -4,7 +4,7 @@ from os.path import join, dirname
 
 _data = join(dirname(__file__), 'data')
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 def _exit_on_signal(sig, status=None, message=None):
     def exit(sig, frame):
