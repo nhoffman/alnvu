@@ -1,9 +1,9 @@
-#from collections import OrderedDict
 import csv
+import re
 
 import colorbrewer
 from jinja2 import Environment, PackageLoader
-import re
+
 
 default_brewer = colorbrewer.Spectral
 
@@ -14,9 +14,9 @@ def regex_replace(s, pattern, replace):
     """ Enable regex replacement in jinja template """
     _re = re.compile(pattern)
     return _re.sub(replace, s)
-_env.filters['regex_replace'] = regex_replace
 
-#HEX2 = dict((a+b, HEX.index(a)*16 + HEX.index(b)) for a in HEX for b in HEX)
+
+_env.filters['regex_replace'] = regex_replace
 
 
 def rgb_from_triplet(triplet):
@@ -28,10 +28,12 @@ def load_template():
     return _env.get_template('html_template.jinja')
 
 
-def print_html(formatted_seqs, vnumstrs, mask, outfile, annotations=None, fontsize=12, seqnums=None, charcolors=None, tableonly=False):
+def print_html(formatted_seqs, vnumstrs, mask, outfile, annotations=None,
+               fontsize=12, seqnums=None, charcolors=None, tableonly=False):
     # XXX - Uhh... what are seqnums?
     render_dict = dict(seqlist=formatted_seqs, vnumstrs=vnumstrs,
-                       mask=mask, annotations=annotations, colors=charcolors, tableonly=tableonly)
+                       mask=mask, annotations=annotations, colors=charcolors,
+                       tableonly=tableonly)
     with open(outfile, 'w') as handle:
         load_template().stream(render_dict).dump(handle)
 
@@ -65,14 +67,18 @@ def parse_mapping_file(mapping_handle):
 class AnnotationSet(object):
 
     @classmethod
-    def from_mapping_file(cls, handle, mask, color_mapping=None, brewer=default_brewer):
+    def from_mapping_file(cls, handle, mask, color_mapping=None,
+                          brewer=default_brewer):
         """ Convenience method for loading directly from files. """
         mapping = parse_mapping_file(handle)
         return cls(mapping, mask, color_mapping)
 
     def __init__(self, col_mapping, mask, color_mapping=None, brewer=default_brewer):
-        """ col_mapping is a mapping of 1-index based columns to group names. mask is the mask to be applied
-        to sequences and number string rows. """
+        """col_mapping is a mapping of 1-index based columns to group
+        names. mask is the mask to be applied to sequences and number
+        string rows.
+
+        """
         self.col_mapping = col_mapping
         self.mask = mask
         self.mask_cols = [i + 1 for i in xrange(len(mask)) if mask[i]]
@@ -97,7 +103,7 @@ class AnnotationSet(object):
         return self.mask_cols.index(col)
 
     def get_color(self, group):
-        if group == None:
+        if group is None:
             return None
         return self.color_mapping[group]
 
@@ -125,11 +131,13 @@ class AnnotationSet(object):
             if group == last_group:
                 latest_region.append(item)
                 last_yield = False
-                #import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
 
             else:
                 last_yield = True
-                yield (join_region(latest_region), last_group, self.get_color(last_group))
+                yield (join_region(latest_region),
+                       last_group,
+                       self.get_color(last_group))
                 latest_region = [item]
                 last_group = group
 
