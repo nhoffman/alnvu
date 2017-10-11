@@ -58,54 +58,52 @@ All of these examples can be run from within the package directory::
 
 The default output. Note that columns are numbered (column 8 is the first shown, column 122 is the last)::
 
-    % ./av testfiles/10patients_aln.fasta | head -n 15
-
-         # 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-         # 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000011111111111111111111111
-         # 0011111111112222222222333333333344444444445555555555666666666677777777778888888888999999999900000000001111111111222
-         # 8901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012
-     59735 agagtttgatcctggctcaggacgaacgcTGGCGGCgtGCTTAACACATGCAAGTCGAACGaTgAAgcggtGCTTgcaccgtggatt------AGTGGCGAACGGGTGAGTAAtA
-     70875 -----------------------------------------------------------------------------------------------------------GAGTAAtA
-     58095 agagtttgatcctggctcagagcgaacgcTGGCGGCatGCTTAACACATGCAAGTCGcACGGgtggtttcgGCcatc----------------AGTGGCGgACGGGTGAGTAACg
-     70854 -----------------------------TGGCGGCagGCcTAACACATGCAAGTCGAgCGGatgAcgggAGCTTgctccttgattc------AGcGGCGgACGGGTGAGTAAtg
-     62024 agagtttgatcctggctcaggacgaacgcTGGCGGCgtGCTTAACACATGCAAGTCGAACGaTgAAgcctttCggggtggatt----------AGTGGCGAACGGGTGAGTAACA
-     59895 ---------------------------------------------------AAGTCGAACGGTgAAagagAGCTTagctctctggatc-----AGTGGCGAACGGGTGAGTAACA
-     57728 -----------------------------------------------------------tt--------------------------------AGTGGCGAACGGGTGAGTAACg
-     10734 ---------------------------gcTGaCGGCgtGCTTAACACATGCAAGTCGAACGGgatccattAGCgcttttgtgtttttggtgagAGTGGCGAACGGGTGAGTAACA
-     71041 --------------------------cgcTGGCGGCagGCTTAACACATGCAAGTCGAACGaTgAAgtctAGCTTgctagacggatt------AGTGGCGAACGGGTGAGTAAtg
-     6161O -----------------------------TGGCGGt-gGCcTAACACATGCAAGTCGAACGGatccttcggGaTT------------------AGTGGCGgACGGGTGAGTAACA
+    % ./av -w 80 testfiles/10patients_aln.fasta | head -n 15
+         # 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+         # 00000000000000000000000000000000000000000000000000000000000000000000000000000000
+         # 00111111111122222222223333333333444444444455555555556666666666777777777788888888
+         # 89012345678901234567890123456789012345678901234567890123456789012345678901234567
+     59735 agagtttgatcctggctcaggacgaacgcTGGCGGCgtGCTTAACACATGCAAGTCGAACGaTgAAgcggtGCTTgcacc
+     70875 --------------------------------------------------------------------------------
+     58095 agagtttgatcctggctcagagcgaacgcTGGCGGCatGCTTAACACATGCAAGTCGcACGGgtggtttcgGCcatc---
+     70854 -----------------------------TGGCGGCagGCcTAACACATGCAAGTCGAgCGGatgAcgggAGCTTgctcc
+     62024 agagtttgatcctggctcaggacgaacgcTGGCGGCgtGCTTAACACATGCAAGTCGAACGaTgAAgcctttCggggtgg
+     59895 ---------------------------------------------------AAGTCGAACGGTgAAagagAGCTTagctc
+     57728 -----------------------------------------------------------tt-------------------
+     10734 ---------------------------gcTGaCGGCgtGCTTAACACATGCAAGTCGAACGGgatccattAGCgcttttg
+     71041 --------------------------cgcTGGCGGCagGCTTAACACATGCAAGTCGAACGaTgAAgtctAGCTTgctag
+     6161O -----------------------------TGGCGGt-gGCcTAACACATGCAAGTCGAACGGatccttcggGaTT-----
 
 The input file can be provided via stdin::
 
    % cat testfiles/10patients_aln.fasta | ./av
 
-Exercising some of the options (show sequence numbers and a consensus; show differences with first sequence, restrict to columns 200-300)::
+Exercising some of the options (show sequence numbers and a consensus; show differences with first sequence, restrict to columns 200-280)::
 
-  % ./av testfiles/10patients_aln.fasta --number-sequences --consensus --range 200,300 --compare-to 59735
-		  # 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-		  # 22222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222223
-		  # 00000000001111111111222222222233333333334444444444555555555566666666667777777777888888888899999999990
-		  # 01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
-   1 ==REF==> 59735 TGGGGtG-TTGGTgGAAAGCgttatgga------------GTGGTTTTAGATGGGCTCACGGCCTATCAGCTTGTTGGTGAGGTAATGGCTTACCAAGGCG
-   2          70875 gGGt----------GAAAGtGggggaccgcaaggcctc--acGcagcagGAgcGGCcgAtGtCtgATtAGCTaGTTGGTGgGGTAAaGGCccACCAAGGCG
-   3          58095 gGcc----------cAAAGCcgaAaG--------------GcGccTTTgGAgcGGCctgCGtCCgATtAGgTaGTTGGTGgGGTAAaGGCcTACCAAGcCt
-   4          70854 gGGa----------GAAAGCaggggaccttcgggcctt--GcGcTaTcAGATGaGCctAgGtCggATtAGCTaGTTGGTGgGGTAATGGCTcACCAAGGCG
-   5          62024 TGGGa-c-ggGGTtaAAAGCtccg----------------GcGGTgaagGATGaGCcCgCGGCCTATCAGCTTGTTGGTGgGGTAATGGCcTACCAAGGCG
-   6          59895 TcttcaG-caGcTGGAAAGaaTT-----------------tcGGTcaggGATGaGCTCgCGGCCTATCAGCTTGTTGGTGAGGTAATGGCTcACCAAGGCG
-   7          57728 TcGaG-GaTaGaT-GAAAGgtggcctctacatgtaagctatcacTgaagGAgGGGaTtgCGtCtgATtAGCTaGTTGGaGgGGTAAcGGCccACCAAGGCG
-   8          10734 TGGGG-t-TgttgGGAAAGgtTTtTt--------------cTGGaTTggGATGGGCTCgCGGCtTATCAGCTTGTTGGTGgGGTgATGGCTTACCAAGGCt
-   9          71041 gaGa----------GAAAGgGggcTtttagctc-------tcGcTaaTAGATGaGCctAaGtCggATtAGCTaGTTGGTGgGGTAAaGGCcTACCAAGGCG
-  10          6161O gGGG----------GAAAGatTTA----------------tcGccaTTgGAgcGGCcCgCGtCtgATtAGCTaGTTGGTGgGGTAAaGGCTcACCAAGGCG
-  11      CONSENSUS xGGx------x-x-GAAAGxxxxxxx--------------xcGcTxxxgGATGGGCcxgCGtCxgATtAGCTaGTTGGTGgGGTAAxGGCxxACCAAGGCG
-
+  % ./av testfiles/10patients_aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735
+		  # 000000000000000000000000000000000000000000000000000000000000000000000000000000000
+		  # 222222222222222222222222222222222222222222222222222222222222222222222222222222222
+		  # 000000000011111111112222222222333333333344444444445555555555666666666677777777778
+		  # 012345678901234567890123456789012345678901234567890123456789012345678901234567890
+   1 ==REF==> 59735 TGGGGtG-TTGGTgGAAAGCgttatgga------------GTGGTTTTAGATGGGCTCACGGCCTATCAGCTTGTTGGTGA
+   2          70875 gGGt----------GAAAGtGggggaccgcaaggcctc--acGcagcagGAgcGGCcgAtGtCtgATtAGCTaGTTGGTGg
+   3          58095 gGcc----------cAAAGCcgaAaG--------------GcGccTTTgGAgcGGCctgCGtCCgATtAGgTaGTTGGTGg
+   4          70854 gGGa----------GAAAGCaggggaccttcgggcctt--GcGcTaTcAGATGaGCctAgGtCggATtAGCTaGTTGGTGg
+   5          62024 TGGGa-c-ggGGTtaAAAGCtccg----------------GcGGTgaagGATGaGCcCgCGGCCTATCAGCTTGTTGGTGg
+   6          59895 TcttcaG-caGcTGGAAAGaaTT-----------------tcGGTcaggGATGaGCTCgCGGCCTATCAGCTTGTTGGTGA
+   7          57728 TcGaG-GaTaGaT-GAAAGgtggcctctacatgtaagctatcacTgaagGAgGGGaTtgCGtCtgATtAGCTaGTTGGaGg
+   8          10734 TGGGG-t-TgttgGGAAAGgtTTtTt--------------cTGGaTTggGATGGGCTCgCGGCtTATCAGCTTGTTGGTGg
+   9          71041 gaGa----------GAAAGgGggcTtttagctc-------tcGcTaaTAGATGaGCctAaGtCggATtAGCTaGTTGGTGg
+  10          6161O gGGG----------GAAAGatTTA----------------tcGccaTTgGAgcGGCcCgCGtCtgATtAGCTaGTTGGTGg
+  11      CONSENSUS xGGx------x-x-GAAAGxxxxxxx--------------xcGcTxxxgGATGGGCcxgCGtCxgATtAGCTaGTTGGTGg
 
 Write a single-page pdf file::
 
-  % ./av testfiles/10patients_aln.fasta --outfile=test.pdf --quiet --blocks-per-page=5
+  % ./av testfiles/10patients_aln.fasta --pdf test.pdf --quiet --blocks-per-page=5
 
 Same as above::
 
-  % ./av testfiles/10patients_aln.fasta -o test.pdf -q -b 5
+  % ./av testfiles/10patients_aln.fasta -pdf test.pdf -q -b 5
 
 And do you know about ``seqmagick``? If not, run, don't walk to
 https://github.com/fhcrc/seqmagick and check it out, so that you can
