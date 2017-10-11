@@ -58,7 +58,7 @@ examples
 
 The default output. Note that columns are numbered (column 8 is the first shown, column 122 is the last)::
 
-    % ./av -w 80 testfiles/10patients_aln.fasta | head -n 15
+    % ./av -w 80 testfiles/aln.fasta | head -n 15
          # 00000000000000000000000000000000000000000000000000000000000000000000000000000000
          # 00000000000000000000000000000000000000000000000000000000000000000000000000000000
          # 00111111111122222222223333333333444444444455555555556666666666777777777788888888
@@ -76,11 +76,11 @@ The default output. Note that columns are numbered (column 8 is the first shown,
 
 The input file can be provided via stdin::
 
-   % cat testfiles/10patients_aln.fasta | av
+   % cat testfiles/aln.fasta | av
 
 Exercising some of the options (show sequence numbers and a consensus; show differences with first sequence, restrict to columns 200-280)::
 
-  % av testfiles/10patients_aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735
+  % av testfiles/aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735
 		  # 000000000000000000000000000000000000000000000000000000000000000000000000000000000
 		  # 222222222222222222222222222222222222222222222222222222222222222222222222222222222
 		  # 000000000011111111112222222222333333333344444444445555555555666666666677777777778
@@ -99,11 +99,11 @@ Exercising some of the options (show sequence numbers and a consensus; show diff
 
 Write a single-page pdf file::
 
-  % av testfiles/10patients_aln.fasta --pdf test.pdf --quiet --blocks-per-page=5
+  % av testfiles/aln.fasta --pdf test.pdf --quiet --blocks-per-page=5
 
 Same as above::
 
-  % av testfiles/10patients_aln.fasta -pdf test.pdf -q -b 5
+  % av testfiles/aln.fasta -pdf test.pdf -q -b 5
 
 And do you know about ``seqmagick``? If not, run, don't walk to
 https://github.com/fhcrc/seqmagick and check it out, so that you can

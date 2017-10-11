@@ -7,8 +7,8 @@ import pprint
 import config
 from alnvu import util
 
-infile = path.join(config.datadir, '10patients_aln.fasta')
-treefile = path.join(config.datadir, '10patients_aln.tre')
+infile = path.join(config.datadir, 'aln.fasta')
+treefile = path.join(config.datadir, 'aln.tre')
 
 
 class TestFastaObject(unittest.TestCase):
