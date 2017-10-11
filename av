@@ -162,40 +162,30 @@ def main(arguments):
         headers ("group", "col") where each row identifies a label (group)
         and a corresponding column (1-indexed)."""))
 
-    output_options.add_argument("-o", "--outfile", dest="outfile",
-                                help="Write output to a file.")
+    output_options.add_argument(
+        "-o", "--outfile", type=argparse.FileType('w'), metavar='FILE',
+        default=sys.stdout, help="output file for text")
 
-    output_options.add_argument("-F", "--fontsize", dest="fontsize",
-                                help="Font size for pdf output [%(default)s]",
-                                metavar="NUMBER", default=7, type=int)
+    output_options.add_argument(
+        '--pdf', metavar='FILE', help="PDF output file")
 
-    # For decide what output format to use
-    out_format_group = output_options.add_mutually_exclusive_group()
-    out_format_group.add_argument(
-        '--stdout', dest='output_format', action='store_const', const='stdout',
-        default='stout', help='write to standard out (default)')
-
-    # XXX - See if default above does the trick for specifying this as default
-    out_format_group.add_argument(
-        '-P', '--pdf', dest='output_format', action='store_const', const='pdf',
-        help="Write out to pdf")
-
-    out_format_group.add_argument(
-        '-H', '--html', dest='output_format', action='store_const', const='html',
-        help="Write out to html")
+    output_options.add_argument(
+        '--html', metavar='FILE', help="HTML output file")
 
     # Specifically for html output:
     html_options = parser.add_argument_group('HTML output')
     html_options.add_argument('--annotation-file', type=argparse.FileType('r'))
     html_options.add_argument(
         '--table-only', action='store_true', default=False,
-        help="""Don't spit out a full html document, just the
+        help="""Don't produce a full html document, just the
         alignment table and style tags. Handy if you'd like to
         include in another document.""")
     html_options.add_argument(
-        '--char-colors',
-        type=argparse.FileType('r'),
+        '--char-colors', type=argparse.FileType('r'),
         help="csv file containing mapping of characters to HTML-defined colors.")
+    html_options.add_argument(
+        "--fontsize-html", metavar="NUMBER", default=7, type=int,
+        help="Font size for html output [%(default)s]")
 
     # pdf options (only if reportlab is installed)
     if pdf.print_pdf:
@@ -204,15 +194,18 @@ def main(arguments):
             'These options require reportlab.')
 
         pdf_options.add_argument(
-            "-O", "--orientation", dest="orientation",
-            help="Set page orientation; choose from portrait, landscape [%(default)s]",
-            metavar="ORIENTATION", default='portrait',
-            choices=('portrait', 'landscape'))
+            "-O", "--orientation", default='portrait',
+            choices=('portrait', 'landscape'),
+            help="Set page orientation; choose from portrait, landscape [%(default)s]")
 
         pdf_options.add_argument(
-            "-b", "--blocks-per-page", dest="blocks_per_page",
+            "-b", "--blocks-per-page",
             metavar="NUMBER", type=int, default=1,
             help="Number of aligned blocks of sequence per page [%(default)s]")
+
+        pdf_options.add_argument(
+            "--fontsize-pdf", metavar="NUMBER", default=7, type=int,
+            help="Font size for pdf output [%(default)s]")
 
     args = parser.parse_args(arguments)
 
@@ -258,7 +251,7 @@ def main(arguments):
         seqrange=get_range(args.rawrange) if args.rawrange else None,
         reference_top=args.reference_top)
 
-    if args.output_format == 'html':
+    if args.html:
         if args.annotation_file:
             annotations = html.AnnotationSet.from_mapping_file(
                 args.annotation_file, mask)
@@ -271,9 +264,9 @@ def main(arguments):
             char_colors = None
 
         html.print_html(formatted_seqs, vnumstrs, mask,
-                        outfile=args.outfile,
+                        outfile=args.html,
                         annotations=annotations,
-                        fontsize=args.fontsize,
+                        fontsize=args.fontsize_html,
                         seqnums=args.seqnums,
                         charcolors=char_colors,
                         tableonly=args.table_only)
@@ -291,14 +284,14 @@ def main(arguments):
     if not args.quiet:
         for page in pages:
             for line in page:
-                print line.rstrip()
-            print ''
+                args.outfile.write(line + '\n')
+            args.outfile.write('\n')
 
-    if args.output_format == 'pdf':
+    if args.pdf:
         pdf.print_pdf(
             pages,
-            outfile=args.outfile,
-            fontsize=args.fontsize,
+            outfile=args.pdf,
+            fontsize=args.fontsize_pdf,
             orientation=args.orientation,
             blocks_per_page=args.blocks_per_page
         )
