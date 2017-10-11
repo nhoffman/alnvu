@@ -17,7 +17,8 @@ def get_range(rawrange):
 
     def handle_badrange():
         print(
-            'Error in "-r/--range %s": argument requires two integers separated by a comma.' % rawrange)
+            'Error in "-r/--range {}": argument requires two '
+            'integers separated by a comma.'.format(rawrange))
         sys.exit(1)
 
     try:
@@ -38,53 +39,56 @@ def main(arguments):
         default=sys.stdin,
         help="Input file in fasta format (reads stdin if missing)")
 
-    parser.add_argument("-q", "--quiet", dest="quiet",
-                        help="Suppress output of alignment to screen.",
-                        action='store_true', default=False)
+    parser.add_argument(
+        "-q", "--quiet", dest="quiet", action='store_true', default=False,
+        help="Suppress output of alignment to screen.")
 
-    parser.add_argument("--empty-ok",
-                        help="Exit with zero status if infile contains no sequences",
-                        action='store_true', default=False)
+    parser.add_argument(
+        "--empty-ok", action='store_true', default=False,
+        help="Exit with zero status if infile contains no sequences")
 
     # layout
     layout_options = parser.add_argument_group('Layout')
 
-    layout_options.add_argument("-w", "--width", dest="ncol",
-                                help="Width of sequence to display in each block in characters [%(default)s]",
-                                metavar="NUMBER", type=int, default=115)
+    layout_options.add_argument(
+        "-w", "--width", dest="ncol", metavar="NUMBER", type=int, default=115,
+        help="""Width of sequence to display in each block 'in
+        characters [%(default)s]""")
 
-    layout_options.add_argument("-L", "--lines-per-block", dest="nrow",
-                                help="Sequences (lines) per block. [%(default)s]",
-                                metavar="NUMBER", type=int, default=75)
+    layout_options.add_argument(
+        "-L", "--lines-per-block", dest="nrow", metavar="NUMBER", type=int, default=75,
+        help="Sequences (lines) per block. [%(default)s]")
 
     # columns
     column_options = parser.add_argument_group('Column selection')
 
-    column_options.add_argument("-x", "--exclude-invariant", dest="exclude_invariant",
-                                help="""Show only columns with at least N non-consensus
-bases (set N using the '-a/--min-subs')""",
-                                action='store_true', default=False)
-
-    column_options.add_argument("-g", "--include-gapcols", dest="include_gapcols",
-                                help="Show columns containing only gap characters.",
-                                action='store_true', default=False)
+    column_options.add_argument(
+        "-x", "--exclude-invariant", dest="exclude_invariant",
+        action='store_true', default=False,
+        help="""Show only columns with at least N non-consensus bases
+        (set N using '-a/--min-subs')""")
 
     column_options.add_argument(
-        "-r", "--range", dest="rawrange",
-        help="Range of columns to display (eg '-r start,stop')",
-        metavar='INTERVAL')
+        "-g", "--include-gapcols", dest="include_gapcols",
+        action='store_true', default=False,
+        help="Show columns containing only gap characters.")
 
-    column_options.add_argument("-s", "--min-subs", dest="min_subs",
-                                help="Minimum NUMBER of substitutions required to define a position as variable. [%(default)s]",
-                                metavar="NUMBER", type=int, default=1)
+    column_options.add_argument(
+        "-r", "--range", dest="rawrange", metavar='INTERVAL',
+        help="Range of columns to display (eg '-r start,stop')")
+
+    column_options.add_argument(
+        "-s", "--min-subs", dest="min_subs", metavar="NUMBER", type=int, default=1,
+        help="""Minimum NUMBER of substitutions required to define a
+        position as variable. [%(default)s]""")
 
     # consensus
     consensus_options = parser.add_argument_group(
         'Consensus display and sequence appearance')
 
-    consensus_options.add_argument("-c", "--consensus", dest="add_consensus",
-                                   help="Show the consensus sequence [%(default)s]",
-                                   action='store_true', default=False)
+    consensus_options.add_argument(
+        "-c", "--consensus", dest="add_consensus", action='store_true', default=False,
+        help="Show the consensus sequence [%(default)s]")
 
     consensus_options.add_argument(
         "-d", "--compare-to", dest="compare_to",
@@ -102,43 +106,52 @@ bases (set N using the '-a/--min-subs')""",
         "-G", "--ignore-gaps", dest="include_gaps", action="store_false",
         default=True, help='Ignore gaps in the calculation of a consensus.')
 
-    consensus_options.add_argument("--simchar",
-                                   help="""Character representing a base identical to the consensus. Specify
-        the empty string to identify differences using lower case [default
-        '%(default)s']""", metavar='CHARACTER', default='')
+    consensus_options.add_argument(
+        "--simchar", metavar='CHARACTER', default='',
+        help="""Character representing a base identical to the
+        consensus. Specify the empty string to identify differences
+        using lower case [default '%(default)s']""")
 
-    consensus_options.add_argument('-t', '--reference-top', action='store_true', default=False,
-                                   help="Would like the reference/consensus sequence on the top or the bottom?")
+    consensus_options.add_argument(
+        '-t', '--reference-top', action='store_true',
+        default=False,
+        help="Place the reference/consensus sequence on the top of the alignment")
 
     # annotation
     name_options = parser.add_argument_group('Sequence annotation')
 
-    name_options.add_argument("-i", "--number-sequences", dest="seqnums",
-                              help="Show sequence number to left of name.",
-                              action='store_true', default=False)
+    name_options.add_argument(
+        "-i", "--number-sequences", dest="seqnums", action='store_true', default=False,
+        help="Show sequence number to left of name.")
 
-    name_options.add_argument("-n", "--name-max", dest="name_max",
-                              help="Maximum width of sequence name in characters [%(default)s]",
-                              metavar="NUMBER", type=int, default=35)
+    name_options.add_argument(
+        "-n", "--name-max", dest="name_max", metavar="NUMBER", type=int, default=35,
+        help="""Maximum width of sequence name in characters [%(default)s]""")
 
-    name_options.add_argument("-N", "--name-split", dest="name_split",
-                              help="""Specify a character delimiting sequence names. By
+    name_options.add_argument(
+        "-N", "--name-split", dest="name_split", metavar="CHARACTER",
+        help="""Specify a character delimiting sequence names. By
         default, the name of each sequence is the first
-        whitespace-delimited word. '--name-split=none' causes the entire line after the '>' to be displayed.""",
-                              metavar="CHARACTER")
+        whitespace-delimited word. '--name-split=none' causes the
+        entire line after the '>' to be displayed.""")
 
     name_options.add_argument(
         "-S", "--sort-by-name", type=argparse.FileType('rU'), metavar='FILE',
-        help="File containing sequence names defining the sort-order of the sequences in the alignment.")
+        help="""File containing sequence names defining the sort-order
+        of the sequences in the alignment.""")
 
     name_options.add_argument(
         "--rename-from-file", type=argparse.FileType('rU'), metavar='FILE',
-        help="headerless csv file with columns 'old-name','new-name' to use for renaming the input sequences. If provided, renaming occurs immediately after reading the input sequences.")
+        help="""headerless csv file with columns 'old-name','new-name'
+        to use for renaming the input sequences. If provided, renaming
+        occurs immediately after reading the input sequences.""")
 
     if util.treeorder:
         name_options.add_argument(
             "-T", "--sort-by-tree", type=argparse.FileType('rU'), metavar='FILE',
-            help="File containing a newick-format tree defining the sort-order of the sequences in the alignment (requires biopython).")
+            help="""File containing a newick-format tree defining the
+            sort-order of the sequences in the alignment (requires
+            biopython).""")
 
     # Output options for both pdf and html
     output_options = parser.add_argument_group(
@@ -158,24 +171,32 @@ bases (set N using the '-a/--min-subs')""",
 
     # For decide what output format to use
     out_format_group = output_options.add_mutually_exclusive_group()
-    out_format_group.add_argument('--stdout', dest='output_format', action='store_const', const='stdout',
-                                  default='stout', help='write to standard out (default)')
+    out_format_group.add_argument(
+        '--stdout', dest='output_format', action='store_const', const='stdout',
+        default='stout', help='write to standard out (default)')
+
     # XXX - See if default above does the trick for specifying this as default
-    out_format_group.add_argument('-P', '--pdf', dest='output_format', action='store_const', const='pdf',
-                                  help="Write out to pdf")
-    out_format_group.add_argument('-H', '--html', dest='output_format', action='store_const', const='html',
-                                  help="Write out to html")
+    out_format_group.add_argument(
+        '-P', '--pdf', dest='output_format', action='store_const', const='pdf',
+        help="Write out to pdf")
+
+    out_format_group.add_argument(
+        '-H', '--html', dest='output_format', action='store_const', const='html',
+        help="Write out to html")
 
     # Specifically for html output:
     html_options = parser.add_argument_group('HTML output')
     html_options.add_argument('--annotation-file', type=argparse.FileType('r'))
-    html_options.add_argument('--table-only', action='store_true', default=False,
-                              help="""Don't spit out a full html document, just the alignment table and style tags. Handy if
-            you'd like to include in another document.""")
+    html_options.add_argument(
+        '--table-only', action='store_true', default=False,
+        help="""Don't spit out a full html document, just the
+        alignment table and style tags. Handy if you'd like to
+        include in another document.""")
     html_options.add_argument(
         '--char-colors',
         type=argparse.FileType('r'),
         help="csv file containing mapping of characters to HTML-defined colors.")
+
     # pdf options (only if reportlab is installed)
     if pdf.print_pdf:
         pdf_options = parser.add_argument_group(
