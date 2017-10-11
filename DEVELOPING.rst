@@ -5,11 +5,9 @@
 PyPi
 ====
 
-Make sure to update the __version__ variable in the
-bioscons/__init__.py file, then add a tag with the corresponding
-version, eg::
+Release versions should be identified by git tags::
 
-  git tag -a -m 'first release on pipy' v0.1.0
+  git tag -a -m 'first release on pipy' 0.1.0
 
 If you have not done so create a ~/.pypirc file containing your PyPI
 credentials::
@@ -18,9 +16,8 @@ credentials::
 
 Build and upload (requires `twine` and `wheel` packages)::
 
+  rm -rf dist build
   python setup.py clean
   python setup.py sdist bdist_wheel
   twine upload dist/*
-
-
 
