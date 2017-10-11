@@ -31,7 +31,7 @@ def get_range(rawrange):
     return [start, stop]
 
 
-def main(arguments):
+def main(arguments=None):
 
     parser = argparse.ArgumentParser(description=__doc__, version=__version__)
     parser.add_argument(
@@ -207,7 +207,7 @@ def main(arguments):
             "--fontsize-pdf", metavar="NUMBER", default=7, type=int,
             help="Font size for pdf output [%(default)s]")
 
-    args = parser.parse_args(arguments)
+    args = parser.parse_args(arguments or sys.argv[1:])
 
     # Ignore SIGPIPE, for head support
     exit_on_sigpipe()
@@ -295,6 +295,7 @@ def main(arguments):
             orientation=args.orientation,
             blocks_per_page=args.blocks_per_page
         )
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

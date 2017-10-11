@@ -5,6 +5,8 @@
 ``alnvu`` makes a multiple alignment of biological sequences more
 easily readable by condensing it and highlighting variability.
 
+Produces formatted multiple alignments in plain text, html, and pdf.
+
 
 authors
 =======
@@ -52,8 +54,6 @@ Using ``pip``::
 examples
 ========
 
-All of these examples can be run from within the package directory::
-
     % cd alnvu
 
 The default output. Note that columns are numbered (column 8 is the first shown, column 122 is the last)::
@@ -76,11 +76,11 @@ The default output. Note that columns are numbered (column 8 is the first shown,
 
 The input file can be provided via stdin::
 
-   % cat testfiles/10patients_aln.fasta | ./av
+   % cat testfiles/10patients_aln.fasta | av
 
 Exercising some of the options (show sequence numbers and a consensus; show differences with first sequence, restrict to columns 200-280)::
 
-  % ./av testfiles/10patients_aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735
+  % av testfiles/10patients_aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735
 		  # 000000000000000000000000000000000000000000000000000000000000000000000000000000000
 		  # 222222222222222222222222222222222222222222222222222222222222222222222222222222222
 		  # 000000000011111111112222222222333333333344444444445555555555666666666677777777778
@@ -99,17 +99,17 @@ Exercising some of the options (show sequence numbers and a consensus; show diff
 
 Write a single-page pdf file::
 
-  % ./av testfiles/10patients_aln.fasta --pdf test.pdf --quiet --blocks-per-page=5
+  % av testfiles/10patients_aln.fasta --pdf test.pdf --quiet --blocks-per-page=5
 
 Same as above::
 
-  % ./av testfiles/10patients_aln.fasta -pdf test.pdf -q -b 5
+  % av testfiles/10patients_aln.fasta -pdf test.pdf -q -b 5
 
 And do you know about ``seqmagick``? If not, run, don't walk to
 https://github.com/fhcrc/seqmagick and check it out, so that you can
 do this::
 
-    % seqmagick convert testfiles/ae_like.sto --output-format=fasta - | ./av -cx
+    % seqmagick convert testfiles/ae_like.sto --output-format=fasta - | av -cx
 		   # 000000000000000000000000000000000
 		   # 445555555555566666666666666667777
 		   # 990111111155813445566778888991122
