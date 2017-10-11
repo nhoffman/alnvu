@@ -97,13 +97,16 @@ Exercising some of the options (show sequence numbers and a consensus; show diff
   10          6161O gGGG----------GAAAGatTTA----------------tcGccaTTgGAgcGGCcCgCGtCtgATtAGCTaGTTGGTGg
   11      CONSENSUS xGGx------x-x-GAAAGxxxxxxx--------------xcGcTxxxgGATGGGCcxgCGtCxgATtAGCTaGTTGGTGg
 
+
+The above alignment rendered as colored html (thanks @timholl)::
+
+  % av testfiles/aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735 -q --html aln.html
+
+![aln.png](doc/aln.png?raw=true "colorized html output")
+
 Write a single-page pdf file::
 
   % av testfiles/aln.fasta --pdf test.pdf --quiet --blocks-per-page=5
-
-Same as above::
-
-  % av testfiles/aln.fasta -pdf test.pdf -q -b 5
 
 And do you know about ``seqmagick``? If not, run, don't walk to
 https://github.com/fhcrc/seqmagick and check it out, so that you can
