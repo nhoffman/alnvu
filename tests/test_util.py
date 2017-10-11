@@ -10,6 +10,7 @@ from alnvu import util
 infile = path.join(config.datadir, '10patients_aln.fasta')
 treefile = path.join(config.datadir, '10patients_aln.tre')
 
+
 class TestFastaObject(unittest.TestCase):
     def test01(self):
         self.assertTrue(path.isfile(infile))
@@ -37,15 +38,15 @@ class TestReadFasta(unittest.TestCase):
 
     def test01(self):
         seqs = util.readfasta(self.fobj)
-        self.assertTrue('H59735' == seqs.next().name)
+        self.assertTrue('59735' == seqs.next().name)
 
     def test02(self):
-        seqs = util.readfasta(self.fobj, name_split = False)
-        self.assertTrue('H59735 one|1' == seqs.next().name)
+        seqs = util.readfasta(self.fobj, name_split=False)
+        self.assertTrue('59735 one|1' == seqs.next().name)
 
     def test03(self):
-        seqs = util.readfasta(self.fobj, name_split = '|')
-        self.assertTrue('H59735 one' == seqs.next().name)
+        seqs = util.readfasta(self.fobj, name_split='|')
+        self.assertTrue('59735 one' == seqs.next().name)
 
     def test04(self):
         seqs = util.readfasta(self.fobj)
@@ -65,6 +66,7 @@ class TestReadFasta(unittest.TestCase):
         with open(path.join(config.datadir, 'none.fasta')) as f:
             seqs = util.readfasta(f)
             self.assertEqual(list(seqs), [])
+
 
 def render(seqlist, vnumstrs):
     for page in util.pagify(seqlist, vnumstrs, ncol=150):
@@ -94,7 +96,7 @@ class TestReformat(unittest.TestCase):
         render(seqlist, vnumstrs)
 
     def test03(self):
-        seqlist, vnumstrs, mask = util.reformat(self.seqs, compare_to='H59735')
+        seqlist, vnumstrs, mask = util.reformat(self.seqs, compare_to='59735')
         render(seqlist, vnumstrs)
 
     def test04(self):
