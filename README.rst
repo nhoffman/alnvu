@@ -102,7 +102,7 @@ The above alignment rendered as colored html (thanks @timholl)::
 
   % av testfiles/aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735 -q --html aln.html
 
-![aln.png](doc/aln.png?raw=true "colorized html output")
+.. image:: doc/aln.png?raw=true
 
 Write a single-page pdf file::
 
