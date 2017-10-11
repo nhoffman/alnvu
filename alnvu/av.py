@@ -9,7 +9,7 @@ import argparse
 import csv
 import textwrap
 
-from alnvu import util, pdf, html
+from alnvu import util, pdf, html, package_data
 from alnvu import __version__, exit_on_sigint, exit_on_sigpipe
 
 
@@ -181,8 +181,12 @@ def main(arguments=None):
         alignment table and style tags. Handy if you'd like to
         include in another document.""")
     html_options.add_argument(
-        '--char-colors', type=argparse.FileType('r'),
-        help="csv file containing mapping of characters to HTML-defined colors.")
+        '--color', action='store_true', default=False,
+        help='color nucleotides in output using default palette')
+    html_options.add_argument(
+        '--char-colors', type=argparse.FileType('r'), metavar='FILE',
+        help="""csv file containing mapping of characters to
+        HTML-defined colors (implies --color).""")
     html_options.add_argument(
         "--fontsize-html", metavar="NUMBER", default=7, type=int,
         help="Font size for html output [%(default)s]")
@@ -260,6 +264,9 @@ def main(arguments=None):
 
         if args.char_colors:
             char_colors = html.parse_character_color_file(args.char_colors)
+        elif args.color:
+            with open(package_data('na_colors.csv')) as f:
+                char_colors = html.parse_character_color_file(f)
         else:
             char_colors = None
 
