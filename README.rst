@@ -102,7 +102,7 @@ The above alignment rendered as colored html (thanks @timholl)::
 
   % av testfiles/aln.fasta --number-sequences --consensus --range 200,280 --compare-to 59735 -q --html aln.html
 
-.. image:: alnvu/doc/html.png
+.. image:: https://github.com/nhoffman/alnvu/raw/display_changes/doc/html.png
 
 .. image:: https://raw.githubusercontent.com/nhoffman/alnvu/master/doc/aln.png
 
