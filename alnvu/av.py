@@ -7,7 +7,6 @@ Create formatted sequence alignments with optional pdf output.
 import sys
 import argparse
 import csv
-import textwrap
 
 from alnvu import util, pdf, html, package_data
 from alnvu import __version__, exit_on_sigint, exit_on_sigpipe
@@ -40,6 +39,11 @@ def main(arguments=None):
         help="Input file in fasta format (reads stdin if missing)")
 
     parser.add_argument(
+        "-o", "--outfile", type=argparse.FileType('w'), metavar='FILE',
+        default=sys.stdout, help="""output file for text (stdout by
+        default, use -q/--quiet to suppress)""")
+
+    parser.add_argument(
         "-q", "--quiet", dest="quiet", action='store_true', default=False,
         help="Suppress output of alignment to screen.")
 
@@ -48,7 +52,7 @@ def main(arguments=None):
         help="Exit with zero status if infile contains no sequences")
 
     # layout
-    layout_options = parser.add_argument_group('Layout')
+    layout_options = parser.add_argument_group('Layout (applies to text and pdf)')
 
     layout_options.add_argument(
         "-w", "--width", dest="ncol", metavar="NUMBER", type=int, default=115,
@@ -153,40 +157,33 @@ def main(arguments=None):
             sort-order of the sequences in the alignment (requires
             biopython).""")
 
-    # Output options for both pdf and html
-    output_options = parser.add_argument_group(
-        'Output options for pdf or html output',
-        description=textwrap.dedent("""
-        Note that --annotation-file specifies columns that should be
-        colored in the html output. This is a csv file with
-        headers ("group", "col") where each row identifies a label (group)
-        and a corresponding column (1-indexed)."""))
-
-    output_options.add_argument(
-        "-o", "--outfile", type=argparse.FileType('w'), metavar='FILE',
-        default=sys.stdout, help="output file for text")
-
-    output_options.add_argument(
-        '--pdf', metavar='FILE', help="PDF output file")
-
-    output_options.add_argument(
+    # for html output
+    html_options = parser.add_argument_group('HTML output')
+    html_options.add_argument(
         '--html', metavar='FILE', help="HTML output file")
 
-    # Specifically for html output:
-    html_options = parser.add_argument_group('HTML output')
-    html_options.add_argument('--annotation-file', type=argparse.FileType('r'))
+    html_options.add_argument(
+        '--annotation-file', type=argparse.FileType('r'), metavar='FILE',
+        help="""csv file with headers ("group", "col") specifying
+        columns that should be colored in the html output. Each row
+        identifies a label (group) and a corresponding column
+        (1-indexed).""")
+
     html_options.add_argument(
         '--table-only', action='store_true', default=False,
         help="""Don't produce a full html document, just the
         alignment table and style tags. Handy if you'd like to
         include in another document.""")
+
     html_options.add_argument(
         '--color', action='store_true', default=False,
         help='color nucleotides in output using default palette')
+
     html_options.add_argument(
         '--char-colors', type=argparse.FileType('r'), metavar='FILE',
         help="""csv file containing mapping of characters to
         HTML-defined colors (implies --color).""")
+
     html_options.add_argument(
         "--fontsize-html", metavar="NUMBER", default=7, type=int,
         help="Font size for html output [%(default)s]")
@@ -196,6 +193,9 @@ def main(arguments=None):
         pdf_options = parser.add_argument_group(
             'PDF output',
             'These options require reportlab.')
+
+        pdf_options.add_argument(
+            '--pdf', metavar='FILE', help="PDF output file")
 
         pdf_options.add_argument(
             "-O", "--orientation", default='portrait',
