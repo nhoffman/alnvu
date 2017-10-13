@@ -32,6 +32,7 @@ params = {
     'entry_points': {
         'console_scripts': ['av = alnvu.av:main']
     },
+    'test_suite': 'tests',
 }
 
 setup(**params)

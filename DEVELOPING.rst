@@ -2,6 +2,13 @@
  developing alnvu
 ==================
 
+tests
+=====
+
+Run tests with::
+
+  python setup.py test
+
 PyPi
 ====
 
