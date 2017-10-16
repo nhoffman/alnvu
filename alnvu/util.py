@@ -18,25 +18,36 @@ def get_seq_from_list(compare_to, seqlist):
     """
     Return an item from 'seqlist' identified by string 'compare_to', defines as either:
 
-    - the name of a sequence
+    - a substring matching the name of a single sequence (case-sensitive)
     - the 1-based index if > 0
     - the 0-based index if < 1
+
+    Raises ValueError if 'compare_to' doesn't meet one of the above criteria.
     """
 
-    seqnames = [s.name for s in seqlist]
-    if compare_to in seqnames:
-        # compare_to is the name of a sequence
-        _s = seqlist[seqnames.index(compare_to)]
+    # assume that compare_to is the index of a sequence if it can be
+    # coerced to an int, and the resulting index is in the range of
+    # len(seqlist)
+    try:
+        ref_ix = int(compare_to)
+        # assumes 1-based index if positive, or 0-based offset from
+        # end if 0 or negative
+        _s = seqlist[ref_ix - 1] if ref_ix > 0 else seqlist[ref_ix]
+    except (ValueError, IndexError):
+        pass
     else:
-        # hope that compare_to is the index of a sequence
-        try:
-            ref_ix = int(compare_to)
-            # kinda crazy, but assumes 1-based index if
-            # positive, or 0-based offset from end if 0 or negative
-            _s = seqlist[ref_ix - 1] if ref_ix > 0 else seqlist[ref_ix]
-        except (ValueError, IndexError):
-            raise ValueError(
-                '"{}" must be either the name or 1-based index of a sequence')
+        return _s
+
+    # doesn't seem to be an index... is it a string uniquely matching
+    # a sequence name?
+    matches = [i for i, seq in enumerate(seqlist) if compare_to in seq.name]
+    if len(matches) == 1:
+        return seqlist[matches[0]]
+
+    # getting this far indicates an error
+    raise ValueError(
+        '"{}" must be either a string matching the name of a *single* sequence, '
+        'or 1-based index of a sequence')
 
     return _s
 
