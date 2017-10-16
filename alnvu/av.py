@@ -91,10 +91,11 @@ def main(arguments=None):
 
     consensus_options.add_argument(
         "-d", "--compare-to", dest="compare_to",
-        help="""Identify the reference sequence by name. Nucleotide
-        positions identical to the reference will be replaced with
-        `--simchar`. The  default behavior is to use the consensus
-        sequence as a reference.""", metavar='NAME')
+        help="""Identify the reference sequence by name or 1-based
+        index (use `-i/--number-sequences` to display line
+        numbers). Nucleotide positions identical to the reference will
+        be replaced with `--simchar`. The default behavior is to use
+        the consensus sequence as a reference.""", metavar='NAME')
 
     consensus_options.add_argument(
         "-D", "--no-comparison", action='store_false', dest='compare',

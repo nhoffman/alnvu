@@ -32,7 +32,8 @@ def reformat(seqs,
     * add_consensus - If True, include consensus sequence.
     * compare - if True (default), compare each character to corresponding position
       in the sequence specified by `compare_to` and replace with `simchar` if identical.
-    * compare_to - Name of a reference sequence. None (the default) specifies the consensus.
+    * compare_to - Name or 1-based index of a reference sequence. None
+      (the default) specifies the consensus. Ignored if `compare` is False.
     * exclude_gapcols - if True, mask columns with no non-gap characters
     * exclude_invariant - if True, mask columns without minimal polymorphism
     * min_subs -
@@ -66,7 +67,21 @@ def reformat(seqs,
         if compare_to is None:
             compare_to_name, compare_to_str = consensus_name, consensus_str[:]
         else:
-            _s = seqlist[[s.name for s in seqlist].index(compare_to)]
+            seqnames = [s.name for s in seqlist]
+            if compare_to in seqnames:
+                # compare_to is the name of a sequence
+                _s = seqlist[seqnames.index(compare_to)]
+            else:
+                # hope that compare_to is the index of a sequence
+                try:
+                    ref_ix = int(compare_to)
+                    # kinda crazy, but assumes 1-based index if
+                    # positive, or 0-based offset from end if negative
+                    _s = seqlist[ref_ix - 1] if ref_ix > 0 else seqlist[ref_ix]
+                except (ValueError, IndexError):
+                    raise ValueError(
+                        '"{}" must be either the name or 1-based index of a sequence')
+
             compare_to_name, compare_to_str = _s.name, _s.seq[:]
 
         for seq in seqlist:
