@@ -14,18 +14,13 @@ from alnvu import __version__, exit_on_sigint, exit_on_sigpipe
 
 def get_range(rawrange):
 
-    def handle_badrange():
+    try:
+        start, stop = [int(x) for x in rawrange.split(',')]
+    except (ValueError, AttributeError):
         print(
             'Error in "-r/--range {}": argument requires two '
             'integers separated by a comma.'.format(rawrange))
         sys.exit(1)
-
-    try:
-        start, stop = [int(x) for x in rawrange.split(',')]
-    except ValueError:
-        handle_badrange()
-    except AttributeError:
-        handle_badrange()
 
     return [start, stop]
 
