@@ -1,14 +1,26 @@
-import os
 from os import path
 import unittest
 import logging
-import pprint
 
 import config
 from alnvu import util
 
 infile = path.join(config.datadir, 'aln.fasta')
 treefile = path.join(config.datadir, 'aln.tre')
+
+
+class TestGetExtent(unittest.TestCase):
+    def test01(self):
+        seqs = [
+            '----AAAA---',
+            'AAAA---',
+            '----AAAA',
+            'AAAA',
+        ]
+
+        for s in seqs:
+            start, stop = util.get_extent(s)
+            self.assertEqual(s[start:stop], s.strip('-'))
 
 
 class TestFastaObject(unittest.TestCase):
@@ -68,12 +80,12 @@ class TestReadFasta(unittest.TestCase):
             self.assertEqual(list(seqs), [])
 
 
-def render(seqlist, vnumstrs):
-    for page in util.pagify(seqlist, vnumstrs, ncol=150):
-        print ''
-        for line in page:
-            print line.rstrip()
-        break
+# def render(seqlist, vnumstrs):
+#     for page in util.pagify(seqlist, vnumstrs, ncol=150):
+#         print ''
+#         for line in page:
+#             print line.rstrip()
+#         break
 
 def render(*args):
     pass

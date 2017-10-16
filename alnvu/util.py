@@ -41,6 +41,17 @@ def get_seq_from_list(compare_to, seqlist):
     return _s
 
 
+def get_extent(seqstr):
+    """Return (start, end) identifying the 0-based extent of seqstr
+    excluding end-gaps.
+
+    """
+
+    start = re.search(r'[a-z]', seqstr, flags=re.I).start()
+    stop = len(re.sub(r'[^a-z]+$', '', seqstr, flags=re.I))
+    return start, stop
+
+
 def reformat(seqs,
              add_consensus=True,
              compare=True,
@@ -114,10 +125,8 @@ def reformat(seqs,
         start, stop = seqrange  # 1-indexed
         mask = [start <= i + 1 <= stop for i in ii]
     elif trim_to:
-        trimseq = get_seq_from_list(trim_to, seqlist).seq
-        start = re.search(r'[a-z]', trimseq, flags=re.I).start()
-        stop = len(re.sub(r'[^a-z]+$', '', trimseq, flags=re.I))
         # start, stop are 0-indexed
+        start, stop = get_extent(get_seq_from_list(trim_to, seqlist).seq)
         mask = [start <= i < stop for i in ii]
 
     if exclude_gapcols:
