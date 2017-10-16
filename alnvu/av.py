@@ -62,19 +62,25 @@ def main(arguments=None):
     column_options = parser.add_argument_group('Column selection')
 
     column_options.add_argument(
-        "-x", "--exclude-invariant", dest="exclude_invariant",
+        "-x", "--exclude-invariant",
         action='store_true', default=False,
         help="""Show only columns with at least N non-consensus bases
         (set N using '-a/--min-subs')""")
 
     column_options.add_argument(
-        "-g", "--include-gapcols", dest="include_gapcols",
+        "-g", "--include-gapcols",
         action='store_true', default=False,
         help="Show columns containing only gap characters.")
 
     column_options.add_argument(
         "-r", "--range", dest="rawrange", metavar='INTERVAL',
         help="Range of columns to display (eg '-r start,stop')")
+
+    column_options.add_argument(
+        "-R", "--trim-to", metavar='SEQUENCE',
+        help="""Trim alignment to the extent of this sequence
+        identified by name or 1-based index (use
+        `-i/--number-sequences` to display line numbers). """)
 
     column_options.add_argument(
         "-s", "--min-subs", dest="min_subs", metavar="NUMBER", type=int, default=1,
@@ -90,12 +96,12 @@ def main(arguments=None):
         help="Show the consensus sequence [%(default)s]")
 
     consensus_options.add_argument(
-        "-d", "--compare-to", dest="compare_to",
+        "-d", "--compare-to", dest="compare_to", metavar='SEQUENCE',
         help="""Identify the reference sequence by name or 1-based
         index (use `-i/--number-sequences` to display line
         numbers). Nucleotide positions identical to the reference will
         be replaced with `--simchar`. The default behavior is to use
-        the consensus sequence as a reference.""", metavar='NAME')
+        the consensus sequence as a reference.""")
 
     consensus_options.add_argument(
         "-D", "--no-comparison", action='store_false', dest='compare',
@@ -249,6 +255,7 @@ def main(arguments=None):
         simchar=args.simchar,
         countGaps=args.include_gaps,
         seqrange=get_range(args.rawrange) if args.rawrange else None,
+        trim_to=args.trim_to,
         reference_top=args.reference_top)
 
     if args.html:

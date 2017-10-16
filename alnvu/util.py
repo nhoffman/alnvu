@@ -1,3 +1,4 @@
+import re
 import math
 import itertools
 from itertools import imap
@@ -13,6 +14,33 @@ else:
         return [leaf.name for leaf in tree.get_terminals()]
 
 
+def get_seq_from_list(compare_to, seqlist):
+    """
+    Return an item from 'seqlist' identified by string 'compare_to', defines as either:
+
+    - the name of a sequence
+    - the 1-based index if > 0
+    - the 0-based index if < 1
+    """
+
+    seqnames = [s.name for s in seqlist]
+    if compare_to in seqnames:
+        # compare_to is the name of a sequence
+        _s = seqlist[seqnames.index(compare_to)]
+    else:
+        # hope that compare_to is the index of a sequence
+        try:
+            ref_ix = int(compare_to)
+            # kinda crazy, but assumes 1-based index if
+            # positive, or 0-based offset from end if 0 or negative
+            _s = seqlist[ref_ix - 1] if ref_ix > 0 else seqlist[ref_ix]
+        except (ValueError, IndexError):
+            raise ValueError(
+                '"{}" must be either the name or 1-based index of a sequence')
+
+    return _s
+
+
 def reformat(seqs,
              add_consensus=True,
              compare=True,
@@ -23,6 +51,7 @@ def reformat(seqs,
              simchar='.',
              countGaps=False,
              seqrange=None,
+             trim_to=None,
              reference_top=False):
     """
     Reformat an alignment of sequences for display. Return a list of
@@ -40,6 +69,8 @@ def reformat(seqs,
     * simchar - character indicating identity to corresponding position in compare_to
     * countGaps - include gaps in calculation of consensus and columns to display
     * seqrange - optional two-tuple specifying start and ending coordinates (1-index, inclusive)
+    * trim_to - trim the alignment to the start and end positions of
+      this sequence identified by name or 1-based index (ignored if seqrange is provided).
     * seqnums - show sequence numbers (1-index) to left of name if True
     * reference_top - put reference/consensus sequence at top instead of bottom
     """
@@ -67,21 +98,7 @@ def reformat(seqs,
         if compare_to is None:
             compare_to_name, compare_to_str = consensus_name, consensus_str[:]
         else:
-            seqnames = [s.name for s in seqlist]
-            if compare_to in seqnames:
-                # compare_to is the name of a sequence
-                _s = seqlist[seqnames.index(compare_to)]
-            else:
-                # hope that compare_to is the index of a sequence
-                try:
-                    ref_ix = int(compare_to)
-                    # kinda crazy, but assumes 1-based index if
-                    # positive, or 0-based offset from end if negative
-                    _s = seqlist[ref_ix - 1] if ref_ix > 0 else seqlist[ref_ix]
-                except (ValueError, IndexError):
-                    raise ValueError(
-                        '"{}" must be either the name or 1-based index of a sequence')
-
+            _s = get_seq_from_list(compare_to, seqlist)
             compare_to_name, compare_to_str = _s.name, _s.seq[:]
 
         for seq in seqlist:
@@ -90,15 +107,18 @@ def reformat(seqs,
                 seq.reference = True
             else:
                 seq.seq = seqdiff(seq, compare_to_str, simchar)
-                # seq.seq = seqdiff(
-                #     seq, compare_to_str, simchar = None,
-                #     wrap_variant="<span class='variant'>{}</span>")
 
     ii = range(len(seqlist[0]))
     mask = [True for i in ii]
     if seqrange:
-        start, stop = seqrange
+        start, stop = seqrange  # 1-indexed
         mask = [start <= i + 1 <= stop for i in ii]
+    elif trim_to:
+        trimseq = get_seq_from_list(trim_to, seqlist).seq
+        start = re.search(r'[a-z]', trimseq, flags=re.I).start()
+        stop = len(re.sub(r'[^a-z]+$', '', trimseq, flags=re.I))
+        # start, stop are 0-indexed
+        mask = [start <= i < stop for i in ii]
 
     if exclude_gapcols:
         mask1 = [d.get('-', 0) != nseqs for d in tabulated]
