@@ -14,18 +14,16 @@ else:
 
 
 def reformat(seqs,
-             add_consensus = True,
+             add_consensus=True,
              compare=True,
-             compare_to = None,
-             exclude_gapcols = True,
-             exclude_invariant = False,
-             min_subs = 1,
-             simchar = '.',
-             countGaps = False,
-             seqrange = None,
-             reference_top=False
-             ):
-
+             compare_to=None,
+             exclude_gapcols=True,
+             exclude_invariant=False,
+             min_subs=1,
+             simchar='.',
+             countGaps=False,
+             seqrange=None,
+             reference_top=False):
     """
     Reformat an alignment of sequences for display. Return a list of
     lists of strings; the outer list corresponds to pages.
@@ -109,13 +107,12 @@ def reformat(seqs,
 
 
 def pagify(seqlist, vnumstrs,
-             name_min = 10,
-             name_max = 35,
-             nrow = 65,
-             ncol = 70,
-             all_numstrs = True,
-             seqnums = False):
-
+           name_min=10,
+           name_max=35,
+           nrow=65,
+           ncol=70,
+           all_numstrs=True,
+           seqnums=False):
     """ This does the work of taking the mostly formatted sequences (still as seqobjs) and joining them
     together with names for the pdf and stdout outputs."""
 
@@ -147,8 +144,7 @@ def pagify(seqlist, vnumstrs,
 
             msg = ''
             if seqcount > nrow:
-                msg += 'sequences %s to %s of %s' % \
-                (first+1, last, seqcount)
+                msg += 'sequences %s to %s of %s' % (first + 1, last, seqcount)
 
             if msg:
                 out[-1].append(msg)
@@ -159,28 +155,29 @@ def pagify(seqlist, vnumstrs,
                 # label each position
                 for s in vnumstrs:
                     out[-1].append(
-                    fstr % {'count':'','name':'#','seqstr':s[start:stop]} )
+                        fstr % {'count': '', 'name': '#', 'seqstr': s[start:stop]})
             else:
                 # label position at beginning and end of block
                 half_ncol = int((stop-start)/2)
-                numstr = ' '*name_width + \
+                numstr = ' ' * name_width + \
                     ' %%-%(half_ncol)ss%%%(half_ncol)ss\n' % locals()
-                out[-1].append( numstr % (start + 1, stop) )
+                out[-1].append(numstr % (start + 1, stop))
 
             for seq in this_seqlist:
                 count = counter.next()
                 seqstr = seq[start:stop]
                 name = seq.name[:name_width]
-                out[-1].append( fstr % locals() )
+                out[-1].append(fstr % locals())
 
     return out
+
 
 class Seqobj(object):
     """
     A minimal container for biological sequences.
     """
 
-    def __init__(self, name, seq = None):
+    def __init__(self, name, seq=None):
         self.name = name
         self.seq = seq or ''
         self.reference = False
@@ -204,8 +201,7 @@ class Seqobj(object):
     #     return '>%s\n%s\n' % (self.name, self.seq)
 
 
-
-def readfasta(infile, degap = False, name_split = None):
+def readfasta(infile, degap=False, name_split=None):
     """
     Lightweight fasta parser. Returns iterator of Seqobj objects given open file 'infile'.
 
@@ -225,12 +221,13 @@ def readfasta(infile, degap = False, name_split = None):
             else:
                 name, seq = line.lstrip('> ').split(name_split, 1)[0], ''
         else:
-            seq += line.replace('-','') if degap else line
+            seq += line.replace('-', '') if degap else line
 
     if name:
         yield Seqobj(name, seq)
 
-def tabulate( seqList ):
+
+def tabulate(seqList):
     """calculate the abundance of each character in the columns of
     aligned sequences; tallies are returned as a list of dictionaries
     indexed by position (position 1 = index 0). Keys of dictionaries are
@@ -248,7 +245,7 @@ def tabulate( seqList ):
     dictList = [{} for i in xrange(maxLength)]
 
     for seq in seqList:
-        #make sure seq is padded
+        # make sure seq is padded
         seqString = seq.seq
         seqString += '-'*(maxLength - len(seqString))
 
@@ -262,7 +259,9 @@ def tabulate( seqList ):
 
     return dictList
 
-def consensus( tabdict, countGaps=False, plu=2, gap='-', errorchar='X', use_ambi=False ):
+
+def consensus(tabdict, countGaps=False, plu=2, gap='-', errorchar='X',
+              use_ambi=False):
     """Given a dictionary from tabulate representing character frequencies
     at a single position, returns the most common char at
     that position subject to the rules below.
@@ -279,7 +278,6 @@ def consensus( tabdict, countGaps=False, plu=2, gap='-', errorchar='X', use_ambi
     use_ambi - uses IUPAC ambiguity codes if possible in place of errorchar
     """
 
-
     tabdict = tabdict.copy()
 
     if not countGaps:
@@ -295,20 +293,22 @@ def consensus( tabdict, countGaps=False, plu=2, gap='-', errorchar='X', use_ambi
     if len(tabdict) == 1:
         return tabdict.keys()[0]
 
-    rdict = dict([(v,k) for k,v in tabdict.items()])
+    rdict = dict([(v, k) for k, v in tabdict.items()])
 
     vals = sorted(tabdict.values())
-    vals.reverse() #largest value is first
+    vals.reverse()  # largest value is first
 
     majority, second = vals[:2]
 
     if majority-second < plu:
+        # TODO: what is IUPAC_rev?
         if use_ambi:
             return IUPAC_rev.get(tuple(sorted(tabdict.keys())), errorchar)
         else:
             return errorchar
     else:
         return rdict[majority]
+
 
 def count_subs(tabdict, countGaps=False, gap='-'):
     """Given a dict representing character frequency at a
@@ -351,48 +351,24 @@ def seqdiff(seq, templateseq, simchar='.'):
     if simchar:
         seqstr = seq[:].upper()
         templatestr = templateseq[:].upper()
+
         def diff(s, t):
             return simchar if s == t and s != '-' else s
     else:
         seqstr = seq[:].lower()
         templatestr = templateseq[:].lower()
+
         def diff(s, t):
             return s.upper() if s == t else s
 
     return ''.join(diff(s, t) for s, t in zip(seqstr, templatestr))
 
 
-# def seqdiff(seq, templateseq, simchar='.', wrap_variant=None):
-#     """Compares seq and templateseq (can be Seq objects or strings)
-#     and returns a string in which non-gap characters in seq that are
-#     identical at that position to templateseq are replaced with
-#     simchar. Returned string is the length of the shorter of seq and
-#     templateseq"""
-
-#     if simchar and len(simchar) > 1:
-#         raise ValueError('simchar must contain a single character only')
-
-#     seqstr = seq[:].upper()
-#     templatestr = templateseq[:].upper()
-
-#     if simchar:
-#         def diff(s, t):
-#             return simchar if s == t and s != '-' else s
-#     elif wrap_variant:
-#         def diff(s, t):
-#             return wrap_variant.format(s) if s == t else s
-#     else:
-#         def diff(s, t):
-#             return s.lower() if s == t else s
-
-#     return ''.join(diff(s, t) for s, t in zip(seqstr, templatestr))
-
-
 def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True):
 
     seqlen = len(seqstr)
 
-    digs = len(`seqlen+1`)
+    digs = len(repr(seqlen + 1))
     if leadingZeros:
         fstr = '%%0%si' % digs
     else:
@@ -410,6 +386,6 @@ def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True):
             i += 1
 
     if ignore_gaps:
-        assert numchars == [fstr % x for x in xrange(1,seqlen+1)]
+        assert numchars == [fstr % x for x in xrange(1, seqlen + 1)]
 
-    return [''.join([x[i] for x in numchars]) for i in range(digs)]
+    return [''.join([x[n] for x in numchars]) for n in range(digs)]
