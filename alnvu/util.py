@@ -81,8 +81,9 @@ def reformat(seqs,
 
     * seqs - list of objects with attributes 'name' and 'seq'
     * add_consensus - If True, include consensus sequence.
-    * compare - if True (default), compare each character to corresponding position
-      in the sequence specified by `compare_to` and replace with `simchar` if identical.
+    * compare - if True (default), compare each character to
+      corresponding position in the sequence specified by `compare_to`
+      and replace with `simchar` if identical.
     * compare_to - Name or 1-based index of a reference sequence. None
       (the default) specifies the consensus. Ignored if `compare` is False.
     * exclude_gapcols - if True, mask columns with no non-gap characters
@@ -90,9 +91,11 @@ def reformat(seqs,
     * min_subs -
     * simchar - character indicating identity to corresponding position in compare_to
     * countGaps - include gaps in calculation of consensus and columns to display
-    * seqrange - optional two-tuple specifying start and ending coordinates (1-index, inclusive)
+    * seqrange - optional two-tuple specifying start and ending
+      coordinates (1-index, inclusive)
     * trim_to - trim the alignment to the start and end positions of
-      this sequence identified by name or 1-based index (ignored if seqrange is provided).
+      this sequence identified by name or 1-based index (ignored if
+      seqrange is provided).
     * seqnums - show sequence numbers (1-index) to left of name if True
     * reference_top - put reference/consensus sequence at top instead of bottom
     """
@@ -103,7 +106,8 @@ def reformat(seqs,
     # a list of dicts
     tabulated = tabulate(seqlist)
 
-    consensus_str = ''.join([consensus(d, countGaps=countGaps) for d in tabulated]).upper()
+    consensus_str = ''.join(
+        [consensus(d, countGaps=countGaps) for d in tabulated]).upper()
     consensus_name = 'CONSENSUS'
 
     if add_consensus:
@@ -168,8 +172,9 @@ def pagify(seqlist, vnumstrs,
            ncol=70,
            all_numstrs=True,
            seqnums=False):
-    """ This does the work of taking the mostly formatted sequences (still as seqobjs) and joining them
-    together with names for the pdf and stdout outputs."""
+    """ This does the work of taking the mostly formatted sequences
+    (still as seqobjs) and joining them together with names for the
+    pdf and stdout outputs."""
 
     # XXX - todo, improve docs here ^
 
@@ -213,7 +218,7 @@ def pagify(seqlist, vnumstrs,
                         fstr % {'count': '', 'name': '#', 'seqstr': s[start:stop]})
             else:
                 # label position at beginning and end of block
-                half_ncol = int((stop-start)/2)
+                half_ncol = int((stop - start) / 2)
                 numstr = ' ' * name_width + \
                     ' %%-%(half_ncol)ss%%%(half_ncol)ss\n' % locals()
                 out[-1].append(numstr % (start + 1, stop))
@@ -252,13 +257,11 @@ class Seqobj(object):
     def __repr__(self):
         return '<Seqobj %s>' % (self.name,)
 
-    # def __str__(self):
-    #     return '>%s\n%s\n' % (self.name, self.seq)
-
 
 def readfasta(infile, degap=False, name_split=None):
     """
-    Lightweight fasta parser. Returns iterator of Seqobj objects given open file 'infile'.
+    Lightweight fasta parser. Returns iterator of Seqobj objects given
+    open file 'infile'.
 
     * degap - remove gap characters if True
     * name_split - string on which to split sequence names, or False
@@ -302,7 +305,7 @@ def tabulate(seqList):
     for seq in seqList:
         # make sure seq is padded
         seqString = seq.seq
-        seqString += '-'*(maxLength - len(seqString))
+        seqString += '-' * (maxLength - len(seqString))
 
         # increment the dictionaries for this sequence
         # dict[char] = dict.get(char, 0) + 1
@@ -315,22 +318,21 @@ def tabulate(seqList):
     return dictList
 
 
-def consensus(tabdict, countGaps=False, plu=2, gap='-', errorchar='X',
-              use_ambi=False):
-    """Given a dictionary from tabulate representing character frequencies
-    at a single position, returns the most common char at
-    that position subject to the rules below.
+def consensus(tabdict, countGaps=False, plu=2, gap='-', errorchar='X'):
+    """Calculates the consensus chacater at a position.
 
-    countGaps       { 0 | 1 }
-    plu            plurality for calling a consensus character
+    * a dictionary from tabulate() representing character frequencies at
+      a single position
+    * countGaps - boolean indicating whether to include gap characters
+      in tabulation of the consensus character.
+    * plu - minimum difference in frequency between most common and
+      second most common characters
+    * gap - the character representing a gap
+    * errorchar - character representing a position at which consensus
+      could not be calculated (ie, countGaps is False and all
+      characters are gaps, or the difference in frequency between the
+      first and second most common characaters is < plu)
 
-    Special cases:
-    1) The most abundant character at a position is a gap
-        if countGaps=0, uses the next most common character
-            or 'x' if all chars are gaps
-        if countGaps=1, puts a gap character ('-') at this position
-
-    use_ambi - uses IUPAC ambiguity codes if possible in place of errorchar
     """
 
     tabdict = tabdict.copy()
@@ -355,12 +357,8 @@ def consensus(tabdict, countGaps=False, plu=2, gap='-', errorchar='X',
 
     majority, second = vals[:2]
 
-    if majority-second < plu:
-        # TODO: what is IUPAC_rev?
-        if use_ambi:
-            return IUPAC_rev.get(tuple(sorted(tabdict.keys())), errorchar)
-        else:
-            return errorchar
+    if majority - second < plu:
+        return errorchar
     else:
         return rdict[majority]
 
