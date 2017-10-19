@@ -1,11 +1,14 @@
 import csv
 import re
 
-import colorbrewer
 from jinja2 import Environment, PackageLoader
 
-
-default_brewer = colorbrewer.Spectral
+try:
+    import colorbrewer
+except ImportError:
+    default_brewer = None
+else:
+    default_brewer = colorbrewer.Spectral
 
 _env = Environment(loader=PackageLoader(__package__, 'data'))
 
@@ -81,9 +84,9 @@ class AnnotationSet(object):
         """
         self.col_mapping = col_mapping
         self.mask = mask
-        self.mask_cols = [i + 1 for i in xrange(len(mask)) if mask[i]]
+        self.mask_cols = [i + 1 for i in range(len(mask)) if mask[i]]
         self.groups = list(
-            set(self.col_mapping[c] for c in self.col_mapping.keys()))
+            set(self.col_mapping[c] for c in list(self.col_mapping.keys())))
 
         if color_mapping:
             self.color_mapping = color_mapping
@@ -96,7 +99,7 @@ class AnnotationSet(object):
 
             colors = [rgb_from_triplet(t) for t in pallette]
             self.color_mapping = dict()
-            for i in xrange(n):
+            for i in range(n):
                 self.color_mapping[self.groups[i]] = colors[i]
 
     def masked_index(self, col):
@@ -115,7 +118,7 @@ class AnnotationSet(object):
         def join_region(l):
             return ''.join(str(x) for x in l)
 
-        for i in xrange(len(self.mask)):
+        for i in range(len(self.mask)):
             col = i + 1
             if not self.mask[i]:
                 # If masked, we just skip

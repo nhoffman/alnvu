@@ -17,7 +17,7 @@ except ImportError:
     treeorder = None
 else:
     def treeorder(infile):
-        tree = Phylo.parse(infile, 'newick').next()
+        tree = next(Phylo.parse(infile, 'newick'))
         tree.ladderize()
         return [leaf.name for leaf in tree.get_terminals()]
 
@@ -204,12 +204,12 @@ def pagify(seqlist, vnumstrs,
 
     out = []
     # start is leftmost column for each block of columns
-    for start in xrange(0, colstop, ncol):
+    for start in range(0, colstop, ncol):
         stop = min([start + ncol, colstop])
 
         # breaks into vertical blocks of sequences
         counter = itertools.count(1)
-        for first in xrange(0, seqcount, nrow):
+        for first in range(0, seqcount, nrow):
             out.append([])
             last = min([first + nrow, seqcount])
 
@@ -235,7 +235,7 @@ def pagify(seqlist, vnumstrs,
                 out[-1].append(numstr % (start + 1, stop))
 
             for seq in this_seqlist:
-                count = counter.next()
+                count = next(counter)
                 seqstr = seq.seq[start:stop]
                 name = seq.name[:name_width]
                 out[-1].append(fstr % locals())
@@ -273,7 +273,7 @@ def tabulate(seqs):
         raise ValueError('all sequences must be the same length')
 
     seqlen = lengths.pop()
-    counters = [Counter() for i in xrange(seqlen)]
+    counters = [Counter() for i in range(seqlen)]
     for seq in seqs:
         for i, c in enumerate(seq.seq.upper()):
             counters[i].update([c])
@@ -395,6 +395,6 @@ def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True, gapchar=GAPCHAR):
             i += 1
 
     if ignore_gaps:
-        assert numchars == [fstr % x for x in xrange(1, seqlen + 1)]
+        assert numchars == [fstr % x for x in range(1, seqlen + 1)]
 
     return [''.join([x[n] for x in numchars]) for n in range(digs)]

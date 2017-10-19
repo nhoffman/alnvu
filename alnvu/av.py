@@ -17,9 +17,9 @@ def get_range(rawrange):
     try:
         start, stop = [int(x) for x in rawrange.split(',')]
     except (ValueError, AttributeError):
-        print(
+        print((
             'Error in "-r/--range {}": argument requires two '
-            'integers separated by a comma.'.format(rawrange))
+            'integers separated by a comma.'.format(rawrange)))
         sys.exit(1)
 
     return [start, stop]
@@ -27,16 +27,19 @@ def get_range(rawrange):
 
 def main(arguments=None):
 
-    parser = argparse.ArgumentParser(description=__doc__, version=__version__)
+    parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "infile", type=argparse.FileType('rU'), nargs='?',
+        '-V', '--version', action='version', version='%(prog)s {}'.format(__version__))
+
+    parser.add_argument(
+        "infile", type=argparse.FileType('r'), nargs='?',
         default=sys.stdin,
         help="Input file in fasta format (reads stdin if missing)")
 
     parser.add_argument(
-        "-o", "--outfile", type=argparse.FileType('w'), metavar='FILE',
-        default=sys.stdout, help="""output file for text (stdout by
-        default, use -q/--quiet to suppress)""")
+        "-o", "--outfile", metavar='FILE', type=argparse.FileType('w'),
+        default=sys.stdout,
+        help="""output file for text (stdout by default, use -q/--quiet to suppress)""")
 
     parser.add_argument(
         "-q", "--quiet", dest="quiet", action='store_true', default=False,
@@ -142,19 +145,19 @@ def main(arguments=None):
         entire line after the '>' to be displayed.""")
 
     name_options.add_argument(
-        "-S", "--sort-by-name", type=argparse.FileType('rU'), metavar='FILE',
+        "-S", "--sort-by-name", type=argparse.FileType('r'), metavar='FILE',
         help="""File containing sequence names defining the sort-order
         of the sequences in the alignment.""")
 
     name_options.add_argument(
-        "--rename-from-file", type=argparse.FileType('rU'), metavar='FILE',
+        "--rename-from-file", type=argparse.FileType('r'), metavar='FILE',
         help="""headerless csv file with columns 'old-name','new-name'
         to use for renaming the input sequences. If provided, renaming
         occurs immediately after reading the input sequences.""")
 
     if util.treeorder:
         name_options.add_argument(
-            "-T", "--sort-by-tree", type=argparse.FileType('rU'), metavar='FILE',
+            "-T", "--sort-by-tree", type=argparse.FileType('r'), metavar='FILE',
             help="""File containing a newick-format tree defining the
             sort-order of the sequences in the alignment (requires
             biopython).""")
@@ -164,12 +167,14 @@ def main(arguments=None):
     html_options.add_argument(
         '--html', metavar='FILE', help="HTML output file")
 
-    html_options.add_argument(
-        '--annotation-file', type=argparse.FileType('r'), metavar='FILE',
-        help="""csv file with headers ("group", "col") specifying
-        columns that should be colored in the html output. Each row
-        identifies a label (group) and a corresponding column
-        (1-indexed).""")
+    if html.default_brewer:
+        html_options.add_argument(
+            '--annotation-file', type=argparse.FileType('r'), metavar='FILE',
+            help="""csv file with headers ("group", "col") specifying
+            columns that should be colored in the html output. Each row
+            identifies a label (group) and a corresponding column
+            (1-indexed). Requires installation of the 'colorbrewer'
+            package, which is python2 only.""")
 
     html_options.add_argument(
         '--table-only', action='store_true', default=False,
@@ -223,7 +228,7 @@ def main(arguments=None):
 
     if not seqs:
         if not args.quiet:
-            print 'No sequences in input'
+            print('No sequences in input')
         return 0 if args.empty_ok else 1
 
     if args.rename_from_file:
@@ -304,6 +309,12 @@ def main(arguments=None):
             orientation=args.orientation,
             blocks_per_page=args.blocks_per_page
         )
+
+    if args.infile is not sys.stdin:
+        args.infile.close()
+
+    if args.outfile is not sys.stdout:
+        args.outfile.close()
 
 
 if __name__ == '__main__':

@@ -7,6 +7,8 @@ easily readable by condensing it and highlighting variability.
 
 Produces formatted multiple alignments in plain text, html, and pdf.
 
+.. image:: https://travis-ci.org/nhoffman/alnvu.svg?branch=master
+    :target: https://travis-ci.org/nhoffman/alnvu
 
 authors
 =======
@@ -22,14 +24,14 @@ dependencies
 
 Required:
 
- * Python 2.7
+ * Python 2.7, 3.5+
+ * ``fastalite`` (https://github.com/nhoffman/fastalite)
 
 Optional:
 
  * ``reportlab`` (http://www.reportlab.com/software/opensource/) for pdf output.
  * ``biopython`` (http://biopython.org/) to sort alignments in tree order.
  * ``Jinja2`` (http://jinja.pocoo.org/) for rendering html templates.
-
 
 installation
 ============

@@ -2,7 +2,7 @@ from os import path
 import unittest
 import logging
 
-import config
+from . import config
 from alnvu import util
 
 log = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class TestFastaObject(unittest.TestCase):
     def test03(self):
         with open(infile) as f:
             seqs = util.readfasta(f)
-            seq = seqs.next()
+            seq = next(seqs)
 
         self.assertTrue(hasattr(seq, 'name'))
         self.assertTrue(hasattr(seq, 'seq'))
@@ -62,15 +62,15 @@ class TestReadFasta(unittest.TestCase):
 
     def test01(self):
         seqs = util.readfasta(self.fobj)
-        self.assertEqual('59735', seqs.next().name)
+        self.assertEqual('59735', next(seqs).name)
 
     def test02(self):
         seqs = util.readfasta(self.fobj, name_split='none')
-        self.assertEqual('59735 one|1', seqs.next().name)
+        self.assertEqual('59735 one|1', next(seqs).name)
 
     def test03(self):
         seqs = util.readfasta(self.fobj, name_split='|')
-        self.assertEqual('59735 one', seqs.next().name)
+        self.assertEqual('59735 one', next(seqs).name)
 
     def test04(self):
         seqs = util.readfasta(self.fobj)
@@ -84,7 +84,7 @@ class TestReadFasta(unittest.TestCase):
     def test06(self):
         with open(path.join(config.datadir, 'none.fasta')) as f:
             seqs = util.readfasta(f)
-            self.assertRaises(StopIteration, seqs.next)
+            self.assertRaises(StopIteration, next, seqs)
 
     def test07(self):
         with open(path.join(config.datadir, 'none.fasta')) as f:
