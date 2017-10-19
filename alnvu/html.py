@@ -1,11 +1,14 @@
 import csv
 import re
 
-import colorbrewer
 from jinja2 import Environment, PackageLoader
 
-
-default_brewer = colorbrewer.Spectral
+try:
+    import colorbrewer
+except ImportError:
+    default_brewer = None
+else:
+    default_brewer = colorbrewer.Spectral
 
 _env = Environment(loader=PackageLoader(__package__, 'data'))
 

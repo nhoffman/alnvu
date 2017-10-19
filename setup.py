@@ -26,7 +26,6 @@ params = {
     'requires': ['python (>= 2.7)'],
     'install_requires': [
         'Jinja2>=2.7',
-        'colorbrewer>=0.1.1',
         'reportlab>=3.0',
         'fastalite>=0.3',
     ],
