@@ -32,14 +32,14 @@ def main(arguments=None):
         '-V', '--version', action='version', version='%(prog)s {}'.format(__version__))
 
     parser.add_argument(
-        "infile", type=argparse.FileType('rU'), nargs='?',
+        "infile", type=argparse.FileType('r'), nargs='?',
         default=sys.stdin,
         help="Input file in fasta format (reads stdin if missing)")
 
     parser.add_argument(
-        "-o", "--outfile", type=argparse.FileType('w'), metavar='FILE',
-        default=sys.stdout, help="""output file for text (stdout by
-        default, use -q/--quiet to suppress)""")
+        "-o", "--outfile", metavar='FILE', type=argparse.FileType('w'),
+        default=sys.stdout,
+        help="""output file for text (stdout by default, use -q/--quiet to suppress)""")
 
     parser.add_argument(
         "-q", "--quiet", dest="quiet", action='store_true', default=False,
@@ -145,19 +145,19 @@ def main(arguments=None):
         entire line after the '>' to be displayed.""")
 
     name_options.add_argument(
-        "-S", "--sort-by-name", type=argparse.FileType('rU'), metavar='FILE',
+        "-S", "--sort-by-name", type=argparse.FileType('r'), metavar='FILE',
         help="""File containing sequence names defining the sort-order
         of the sequences in the alignment.""")
 
     name_options.add_argument(
-        "--rename-from-file", type=argparse.FileType('rU'), metavar='FILE',
+        "--rename-from-file", type=argparse.FileType('r'), metavar='FILE',
         help="""headerless csv file with columns 'old-name','new-name'
         to use for renaming the input sequences. If provided, renaming
         occurs immediately after reading the input sequences.""")
 
     if util.treeorder:
         name_options.add_argument(
-            "-T", "--sort-by-tree", type=argparse.FileType('rU'), metavar='FILE',
+            "-T", "--sort-by-tree", type=argparse.FileType('r'), metavar='FILE',
             help="""File containing a newick-format tree defining the
             sort-order of the sequences in the alignment (requires
             biopython).""")
@@ -307,6 +307,12 @@ def main(arguments=None):
             orientation=args.orientation,
             blocks_per_page=args.blocks_per_page
         )
+
+    if args.infile is not sys.stdin:
+        args.infile.close()
+
+    if args.outfile is not sys.stdout:
+        args.outfile.close()
 
 
 if __name__ == '__main__':
