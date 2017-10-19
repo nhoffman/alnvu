@@ -167,12 +167,14 @@ def main(arguments=None):
     html_options.add_argument(
         '--html', metavar='FILE', help="HTML output file")
 
-    html_options.add_argument(
-        '--annotation-file', type=argparse.FileType('r'), metavar='FILE',
-        help="""csv file with headers ("group", "col") specifying
-        columns that should be colored in the html output. Each row
-        identifies a label (group) and a corresponding column
-        (1-indexed).""")
+    if html.default_brewer:
+        html_options.add_argument(
+            '--annotation-file', type=argparse.FileType('r'), metavar='FILE',
+            help="""csv file with headers ("group", "col") specifying
+            columns that should be colored in the html output. Each row
+            identifies a label (group) and a corresponding column
+            (1-indexed). Requires installation of the 'colorbrewer'
+            package, which is python2 only.""")
 
     html_options.add_argument(
         '--table-only', action='store_true', default=False,
