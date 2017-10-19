@@ -29,7 +29,7 @@ def main(arguments=None):
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '-V', '--version', action='version', version='%(prog)s {}'.format(__version__))
+        '-V', '--version', action='version', version='alnvu {}'.format(__version__))
 
     parser.add_argument(
         "infile", type=argparse.FileType('r'), nargs='?',
