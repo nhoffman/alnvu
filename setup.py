@@ -33,6 +33,13 @@ params = {
         'console_scripts': ['av = alnvu.av:main']
     },
     'test_suite': 'tests',
+    'classifiers': [
+        'Development Status :: 4 - Beta',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+    ],
 }
 
 setup(**params)
