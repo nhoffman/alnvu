@@ -12,11 +12,19 @@ subprocess.call(
 # import must follow 'git describe' command above to update version
 from alnvu import __version__
 
+here = os.path.abspath(os.path.dirname(__file__))
+
+# Get the long description from the README file
+with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
+    long_description = f.read()
+
+
 params = {
     'author': 'Noah Hoffman',
     'author_email': 'noah.hoffman@gmail.com',
     'description': ('Reformat and condense multiple sequence alignments '
                     'to highlight variability'),
+    'long_description': long_description,
     'name': 'alnvu',
     'package_dir': {'alnvu': 'alnvu'},
     'packages': ['alnvu'],
