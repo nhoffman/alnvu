@@ -1,20 +1,10 @@
 import os
-import subprocess
 from setuptools import setup
 
-subprocess.call(
-    ('mkdir -p {pkg}/data && '
-     'git describe --tags --dirty > {pkg}/data/ver.tmp '
-     '&& mv {pkg}/data/ver.tmp {pkg}/data/ver '
-     '|| rm -f {pkg}/data/ver.tmp').format(pkg='alnvu'),
-    shell=True, stderr=open(os.devnull, "w"))
-
-# import must follow 'git describe' command above to update version
 from alnvu import __version__
 
-here = os.path.abspath(os.path.dirname(__file__))
-
 # Get the long description from the README file
+here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 

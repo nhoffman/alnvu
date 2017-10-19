@@ -1,15 +1,12 @@
 import signal
 import sys
 import glob
-from os import path
+import os
 
-_data = path.join(path.dirname(__file__), 'data')
+from ._version import get_version
 
-try:
-    with open(path.join(_data, 'ver')) as f:
-        __version__ = f.read().strip().replace('-', '+', 1).replace('-', '.')
-except Exception as e:
-    __version__ = ''
+_data = os.path.join(os.path.dirname(__file__), 'data')
+__version__ = get_version()
 
 
 def _exit_on_signal(sig, status=None, message=None):
@@ -34,7 +31,7 @@ def exit_on_sigpipe(status=None):
     _exit_on_signal(signal.SIGPIPE, status)
 
 
-def package_data(fname, pattern=None):
+def package_data(fname, pattern=None, data_dir=_data):
     """Return the absolute path to a file included in package data,
     raising ValueError if no such file exists. If `pattern` is
     provided, return a list of matching files in package data
@@ -43,11 +40,11 @@ def package_data(fname, pattern=None):
     """
 
     if pattern:
-        return glob.glob(path.join(_data, pattern))
+        return glob.glob(os.path.join(data_dir, pattern))
 
-    pth = path.join(_data, fname)
+    pth = os.path.join(data_dir, fname)
 
-    if not path.exists(pth):
+    if not os.path.exists(pth):
         raise ValueError('Package data does not contain the file %s' % fname)
 
     return pth
