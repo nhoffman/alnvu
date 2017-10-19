@@ -1,6 +1,11 @@
 import os
-import sys
-from itertools import zip_longest, takewhile
+from itertools import takewhile
+
+try:
+    from itertools import zip_longest
+except ImportError:
+    from itertools import izip_longest as zip_longest
+
 
 def grouper(n, iterable, pad=True):
     """
