@@ -1,7 +1,15 @@
 import re
 import math
 import itertools
-from itertools import imap
+from collections import Counter, namedtuple
+
+from fastalite import fastalite
+
+Seq = namedtuple('Seq', ['name', 'seq'])
+
+SIMCHAR = '.'
+GAPCHAR = '-'
+ERRCHAR = 'X'
 
 try:
     from Bio import Phylo
@@ -70,8 +78,9 @@ def reformat(seqs,
              exclude_gapcols=True,
              exclude_invariant=False,
              min_subs=1,
-             simchar='.',
-             countGaps=False,
+             simchar=SIMCHAR,
+             gapchar=GAPCHAR,
+             count_gaps=False,
              seqrange=None,
              trim_to=None,
              reference_top=False):
@@ -90,7 +99,8 @@ def reformat(seqs,
     * exclude_invariant - if True, mask columns without minimal polymorphism
     * min_subs -
     * simchar - character indicating identity to corresponding position in compare_to
-    * countGaps - include gaps in calculation of consensus and columns to display
+    * gapchar - character representing gaps
+    * count_gaps - include gaps in calculation of consensus and columns to display
     * seqrange - optional two-tuple specifying start and ending
       coordinates (1-index, inclusive)
     * trim_to - trim the alignment to the start and end positions of
@@ -100,69 +110,70 @@ def reformat(seqs,
     * reference_top - put reference/consensus sequence at top instead of bottom
     """
 
-    seqlist = [Seqobj(seq.name, seq.seq) for seq in seqs]
+    seqlist = list(seqs)
     nseqs = len(seqlist)
 
-    # a list of dicts
+    # a list of Counter objects
     tabulated = tabulate(seqlist)
 
-    consensus_str = ''.join(
-        [consensus(d, countGaps=countGaps) for d in tabulated]).upper()
-    consensus_name = 'CONSENSUS'
+    cons = Seq(
+        name='CONSENSUS',
+        seq=''.join([consensus(d, count_gaps=count_gaps) for d in tabulated])
+    )
 
     if add_consensus:
-        consensus_seq = Seqobj(consensus_name, consensus_str)
         if reference_top:
-            seqlist.insert(0, consensus_seq)
+            seqlist.insert(0, cons)
         else:
-            seqlist.append(consensus_seq)
+            seqlist.append(cons)
 
     if compare:
         # replace bases identical to reference; make a copy of the
         # sequence for comparison because the original sequences will
         # be modified.
-        if compare_to is None:
-            compare_to_name, compare_to_str = consensus_name, consensus_str[:]
+        if compare_to:
+            compare_to_name, compare_to_str = get_seq_from_list(compare_to, seqlist)
         else:
-            _s = get_seq_from_list(compare_to, seqlist)
-            compare_to_name, compare_to_str = _s.name, _s.seq[:]
+            compare_to_name, compare_to_str = cons
 
-        for seq in seqlist:
-            if seq.name == compare_to_name:
-                seq.name = '==REF==> ' + seq.name
-                seq.reference = True
+        # replace characters identical to the reference
+        for i, seq in enumerate(seqlist):
+            name, seqstr = seq
+            if name == compare_to_name:
+                name = '==REF==> ' + name
             else:
-                seq.seq = seqdiff(seq, compare_to_str, simchar)
+                seqstr = seqdiff(seqstr, compare_to_str, simchar=simchar)
 
-    ii = range(len(seqlist[0]))
-    mask = [True for i in ii]
+            seqlist[i] = Seq(name, seqstr)
+
     if seqrange:
-        start, stop = seqrange  # 1-indexed
-        mask = [start <= i + 1 <= stop for i in ii]
+        start, stop = seqrange
+        start -= 1  # seqrange is 1-indexed
     elif trim_to:
-        # start, stop are 0-indexed
         start, stop = get_extent(get_seq_from_list(trim_to, seqlist).seq)
-        mask = [start <= i < stop for i in ii]
+    else:
+        start, stop = 0, len(tabulated)
 
-    if exclude_gapcols:
-        mask1 = [d.get('-', 0) != nseqs for d in tabulated]
-        mask = [m and m1 for m, m1 in zip(mask, mask1)]
+    mask = []
+    for i, counts in enumerate(tabulated):
+        show = start <= i < stop
 
-    if exclude_invariant:
-        mask1 = [count_subs(d, countGaps=countGaps) >= min_subs
-                 for d in tabulated]
-        mask = [m and m1 for m, m1 in zip(mask, mask1)]
+        if exclude_gapcols:
+            show &= counts.get(gapchar, 0) < nseqs
 
-    def apply_mask(instr):
-        return ''.join(c for c, m in zip(instr, mask) if m)
-    number_by_str = consensus_str
-    vnumstrs = [apply_mask(s)
-                for s in get_vnumbers(number_by_str, leadingZeros=True)]
-    if seqrange or exclude_invariant or exclude_gapcols:
-        for seq in seqlist:
-            seq.seq = apply_mask(seq)
+        if exclude_invariant:
+            show &= count_subs(counts, count_gaps=count_gaps) >= min_subs
+
+        mask.append(show)
+
+    vnumstrs = [apply_mask(s, mask) for s in get_vnumbers(cons.seq)]
+    seqlist = [Seq(s.name, apply_mask(s.seq, mask)) for s in seqlist]
 
     return (seqlist, vnumstrs, mask)
+
+
+def apply_mask(instr, mask):
+    return ''.join(c for c, m in zip(instr, mask) if m)
 
 
 def pagify(seqlist, vnumstrs,
@@ -189,7 +200,7 @@ def pagify(seqlist, vnumstrs,
     if seqnums:
         fstr = ('%%(count)%(num_width)is ' % locals()) + fstr
 
-    colstop = len(seqlist[0])
+    colstop = len(seqlist[0].seq)
 
     out = []
     # start is leftmost column for each block of columns
@@ -225,154 +236,98 @@ def pagify(seqlist, vnumstrs,
 
             for seq in this_seqlist:
                 count = counter.next()
-                seqstr = seq[start:stop]
+                seqstr = seq.seq[start:stop]
                 name = seq.name[:name_width]
                 out[-1].append(fstr % locals())
 
     return out
 
 
-class Seqobj(object):
-    """
-    A minimal container for biological sequences.
-    """
+def readfasta(infile, name_split=None):
+    """Returns an iterator of namedtuple objects with attributes 'name'
+    and 'seq'.  'name_split' is a string on which to split sequence
+    names, or "none" to define seq.name as the entire header line.
 
-    def __init__(self, name, seq=None):
-        self.name = name
-        self.seq = seq or ''
-        self.reference = False
-
-    def __len__(self):
-        return len(self.seq)
-
-    def __iter__(self):
-        return iter(self.seq)
-
-    def __getitem__(self, index):
-        return self.seq[index]
-
-    def __getslice__(self, start, end):
-        return self.seq[start:end]
-
-    def __repr__(self):
-        return '<Seqobj %s>' % (self.name,)
-
-
-def readfasta(infile, degap=False, name_split=None):
-    """
-    Lightweight fasta parser. Returns iterator of Seqobj objects given
-    open file 'infile'.
-
-    * degap - remove gap characters if True
-    * name_split - string on which to split sequence names, or False
-      to define seq.name as the entire header line.
     """
 
-    name, seq = '', ''
-    for line in imap(str.strip, infile):
-        if line.startswith('>'):
-            if name:
-                yield Seqobj(name, seq)
+    seqs = fastalite(infile)
+    if name_split == 'none':
+        seqs = (Seq(seq.description, seq.seq) for seq in seqs)
+    elif name_split:
+        seqs = (Seq(seq.description.split(name_split)[0], seq.seq) for seq in seqs)
+    else:
+        seqs = (Seq(seq.id, seq.seq) for seq in seqs)
 
-            if name_split is False:
-                name, seq = line.lstrip('> '), ''
-            else:
-                name, seq = line.lstrip('> ').split(name_split, 1)[0], ''
-        else:
-            seq += line.replace('-', '') if degap else line
-
-    if name:
-        yield Seqobj(name, seq)
+    return seqs
 
 
-def tabulate(seqList):
-    """calculate the abundance of each character in the columns of
-    aligned sequences; tallies are returned as a list of dictionaries
-    indexed by position (position 1 = index 0). Keys of dictionaries are
-    characters appearing in each position (so dictionaries are
-    of variable length).
+def tabulate(seqs):
+    """Return a list of Counter() objects describing the base frequency
+    at each position in seqs.
 
-    seqList:            a list of sequence objects
+    """
 
-    returns a list of dictionaries corresponding to each position"""
+    seqs = list(seqs)
+    lengths = {len(seq.seq) for seq in seqs}
+    if len(lengths) > 1:
+        raise ValueError('all sequences must be the same length')
 
-    # get length of alignment
-    maxLength = max([len(seq) for seq in seqList])
+    seqlen = lengths.pop()
+    counters = [Counter() for i in xrange(seqlen)]
+    for seq in seqs:
+        for i, c in enumerate(seq.seq.upper()):
+            counters[i].update([c])
 
-    # initialize a data structure for storing the tallies
-    dictList = [{} for i in xrange(maxLength)]
-
-    for seq in seqList:
-        # make sure seq is padded
-        seqString = seq.seq
-        seqString += '-' * (maxLength - len(seqString))
-
-        # increment the dictionaries for this sequence
-        # dict[char] = dict.get(char, 0) + 1
-        # dict <--> dictList[i]
-        # char <--> seqString[i]
-
-        for i, c in enumerate(seqString):
-            dictList[i][c] = dictList[i].get(c, 0) + 1
-
-    return dictList
+    return counters
 
 
-def consensus(tabdict, countGaps=False, plu=2, gap='-', errorchar='X'):
+def consensus(count, count_gaps=False, plurality=2, gapchar='-', errchar='X'):
     """Calculates the consensus chacater at a position.
 
-    * a dictionary from tabulate() representing character frequencies at
-      a single position
-    * countGaps - boolean indicating whether to include gap characters
+    * count - a Counter() object from tabulate() representing
+      character frequencies at a single position
+    * count_gaps - boolean indicating whether to include gap characters
       in tabulation of the consensus character.
-    * plu - minimum difference in frequency between most common and
+    * plurality - minimum difference in frequency between most common and
       second most common characters
-    * gap - the character representing a gap
-    * errorchar - character representing a position at which consensus
-      could not be calculated (ie, countGaps is False and all
+    * gapchar - the character representing a gap
+    * errchar - character representing a position at which consensus
+      could not be calculated (ie, count_gaps is False and all
       characters are gaps, or the difference in frequency between the
       first and second most common characaters is < plu)
 
     """
 
-    tabdict = tabdict.copy()
-
-    if not countGaps:
+    if not count_gaps:
         try:
-            del tabdict[gap]
+            del count[gapchar]
         except KeyError:
             pass
 
-        if len(tabdict) == 0:
-            return errorchar
-
-    # don't worry about gaps from here on
-    if len(tabdict) == 1:
-        return tabdict.keys()[0]
-
-    rdict = dict([(v, k) for k, v in tabdict.items()])
-
-    vals = sorted(tabdict.values())
-    vals.reverse()  # largest value is first
-
-    majority, second = vals[:2]
-
-    if majority - second < plu:
-        return errorchar
+    if len(count) == 0:
+        conschar = errchar
+    elif len(count) == 1:
+        conschar = count.most_common(1)[0][0]
     else:
-        return rdict[majority]
+        (char_1, count_1), (char_2, count_2) = count.most_common(2)
+        if count_1 - count_2 < plurality:
+            conschar = errchar
+        else:
+            conschar = char_1
+
+    return conschar
 
 
-def count_subs(tabdict, countGaps=False, gap='-'):
+def count_subs(tabdict, count_gaps=False, gap='-'):
     """Given a dict representing character frequency at a
     position of an alignment, returns 1 if more than
     one character is represented, 0 otherwise; excludes gaps
-    if not countGaps. There must be at least minchars present for
+    if not count_gaps. There must be at least minchars present for
     a position to be considered variable"""
 
     tabdict = tabdict.copy()
 
-    if not countGaps:
+    if not count_gaps:
         try:
             del tabdict[gap]
         except KeyError:
@@ -391,25 +346,26 @@ def count_subs(tabdict, countGaps=False, gap='-'):
     return substitutions
 
 
-def seqdiff(seq, templateseq, simchar='.'):
-    """Compares seq and templateseq (can be Seq objects or strings)
-    and returns a string in which non-gap characters in seq that are
-    identical at that position to templateseq are replaced with
-    simchar. Returned string is the length of the shorter of seq and
-    templateseq."""
+def seqdiff(seq, templateseq, simchar=SIMCHAR, gapchar=GAPCHAR):
+    """Compares strings seq and templateseq and returns a string in which
+    non-gap characters in seq that are identical at that position to
+    templateseq are replaced with simchar. Returned string is the
+    length of the shorter of seq and templateseq.
+
+    """
 
     if simchar and len(simchar) > 1:
         raise ValueError('simchar must contain a single character only')
 
     if simchar:
-        seqstr = seq[:].upper()
-        templatestr = templateseq[:].upper()
+        seqstr = seq.upper()
+        templatestr = templateseq.upper()
 
         def diff(s, t):
-            return simchar if s == t and s != '-' else s
+            return simchar if s == t and s != gapchar else s
     else:
-        seqstr = seq[:].lower()
-        templatestr = templateseq[:].lower()
+        seqstr = seq.lower()
+        templatestr = templateseq.lower()
 
         def diff(s, t):
             return s.upper() if s == t else s
@@ -417,7 +373,7 @@ def seqdiff(seq, templateseq, simchar='.'):
     return ''.join(diff(s, t) for s, t in zip(seqstr, templatestr))
 
 
-def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True):
+def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True, gapchar=GAPCHAR):
 
     seqlen = len(seqstr)
 
@@ -427,12 +383,12 @@ def get_vnumbers(seqstr, ignore_gaps=True, leadingZeros=True):
     else:
         fstr = '%%%ss' % digs
 
-    gapstr = '-'*digs
+    gapstr = gapchar * digs
 
     numchars = []
     i = 1
     for c in seqstr:
-        if not ignore_gaps and c == '-':
+        if not ignore_gaps and c == gapchar:
             numchars.append(gapstr)
         else:
             numchars.append(fstr % i)

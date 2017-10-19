@@ -5,6 +5,8 @@ import logging
 import config
 from alnvu import util
 
+log = logging.getLogger(__name__)
+
 infile = path.join(config.datadir, 'aln.fasta')
 treefile = path.join(config.datadir, 'aln.tre')
 
@@ -23,6 +25,16 @@ class TestGetExtent(unittest.TestCase):
             self.assertEqual(s[start:stop], s.strip('-'))
 
 
+class TestTabulate(unittest.TestCase):
+    def test01(self):
+        with open(infile) as f:
+            seqs = list(util.readfasta(f))
+
+        tabs = util.tabulate(seqs)
+        cons = ''.join(util.consensus(tab) for tab in tabs)
+        self.assertEqual(len(seqs[0].seq), len(cons))
+
+
 class TestFastaObject(unittest.TestCase):
     def test01(self):
         self.assertTrue(path.isfile(infile))
@@ -30,7 +42,7 @@ class TestFastaObject(unittest.TestCase):
     def test02(self):
         with open(infile) as f:
             seqs = util.readfasta(f)
-            self.assertTrue(all(isinstance(seq, util.Seqobj) for seq in seqs))
+            self.assertTrue(all(hasattr(seq, 'name') for seq in seqs))
 
     def test03(self):
         with open(infile) as f:
@@ -50,24 +62,24 @@ class TestReadFasta(unittest.TestCase):
 
     def test01(self):
         seqs = util.readfasta(self.fobj)
-        self.assertTrue('59735' == seqs.next().name)
+        self.assertEqual('59735', seqs.next().name)
 
     def test02(self):
-        seqs = util.readfasta(self.fobj, name_split=False)
-        self.assertTrue('59735 one|1' == seqs.next().name)
+        seqs = util.readfasta(self.fobj, name_split='none')
+        self.assertEqual('59735 one|1', seqs.next().name)
 
     def test03(self):
         seqs = util.readfasta(self.fobj, name_split='|')
-        self.assertTrue('59735 one' == seqs.next().name)
+        self.assertEqual('59735 one', seqs.next().name)
 
     def test04(self):
         seqs = util.readfasta(self.fobj)
-        self.assertTrue(len(list(seqs)) == 10)
+        self.assertEqual(len(list(seqs)), 10)
 
     def test05(self):
         with open(path.join(config.datadir, 'one.fasta')) as f:
             seqs = util.readfasta(f)
-            self.assertTrue(len(list(seqs)) == 1)
+            self.assertEqual(len(list(seqs)), 1)
 
     def test06(self):
         with open(path.join(config.datadir, 'none.fasta')) as f:

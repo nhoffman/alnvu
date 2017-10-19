@@ -113,10 +113,10 @@ def main(arguments=None):
         default=True, help='Ignore gaps in the calculation of a consensus.')
 
     consensus_options.add_argument(
-        "--simchar", metavar='CHARACTER', default='',
+        "-C", "--simchar", metavar='CHARACTER', default=None,
         help="""Character representing a base identical to the
-        consensus. Specify the empty string to identify differences
-        using lower case [default '%(default)s']""")
+        consensus. The default behavior is to identify differences
+        using lower case.""")
 
     consensus_options.add_argument(
         '-t', '--reference-top', action='store_true',
@@ -219,8 +219,7 @@ def main(arguments=None):
     exit_on_sigpipe()
     exit_on_sigint()
 
-    name_split = False if args.name_split == 'none' else args.name_split
-    seqs = list(util.readfasta(args.infile, name_split=name_split))
+    seqs = util.readfasta(args.infile, name_split=args.name_split)
 
     if not seqs:
         if not args.quiet:
@@ -253,7 +252,7 @@ def main(arguments=None):
         exclude_invariant=args.exclude_invariant,
         min_subs=args.min_subs,
         simchar=args.simchar,
-        countGaps=args.include_gaps,
+        count_gaps=args.include_gaps,
         seqrange=get_range(args.rawrange) if args.rawrange else None,
         trim_to=args.trim_to,
         reference_top=args.reference_top)
