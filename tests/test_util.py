@@ -62,15 +62,15 @@ class TestReadFasta(unittest.TestCase):
 
     def test01(self):
         seqs = util.readfasta(self.fobj)
-        self.assertEqual('59735', seqs.next().name)
+        self.assertEqual('59735', next(seqs).name)
 
     def test02(self):
         seqs = util.readfasta(self.fobj, name_split='none')
-        self.assertEqual('59735 one|1', seqs.next().name)
+        self.assertEqual('59735 one|1', next(seqs).name)
 
     def test03(self):
         seqs = util.readfasta(self.fobj, name_split='|')
-        self.assertEqual('59735 one', seqs.next().name)
+        self.assertEqual('59735 one', next(seqs).name)
 
     def test04(self):
         seqs = util.readfasta(self.fobj)

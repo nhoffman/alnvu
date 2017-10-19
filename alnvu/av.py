@@ -27,7 +27,10 @@ def get_range(rawrange):
 
 def main(arguments=None):
 
-    parser = argparse.ArgumentParser(description=__doc__, version=__version__)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '-V', '--version', action='version', version='%(prog)s {}'.format(__version__))
+
     parser.add_argument(
         "infile", type=argparse.FileType('rU'), nargs='?',
         default=sys.stdin,
