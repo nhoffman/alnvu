@@ -7,6 +7,8 @@ easily readable by condensing it and highlighting variability.
 
 Produces formatted multiple alignments in plain text, html, and pdf.
 
+.. image:: https://travis-ci.org/nhoffman/alnvu.svg?branch=master
+    :target: https://travis-ci.org/nhoffman/alnvu
 
 authors
 =======
