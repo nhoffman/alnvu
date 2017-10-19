@@ -2,7 +2,7 @@
  changes for alnvu
 ===================
 
-0.3.0
+0.3.1
 =====
 
 * python3 support

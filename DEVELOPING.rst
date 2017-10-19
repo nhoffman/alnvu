@@ -25,6 +25,6 @@ Build and upload (requires `twine` and `wheel` packages)::
 
   rm -r dist
   python setup.py clean --all
-  python setup.py sdist bdist_wheel
+  python setup.py sdist
   twine upload dist/*
 
