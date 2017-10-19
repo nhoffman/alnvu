@@ -263,7 +263,7 @@ def main(arguments=None):
         reference_top=args.reference_top)
 
     if args.html:
-        if args.annotation_file:
+        if html.default_brewer and args.annotation_file:
             annotations = html.AnnotationSet.from_mapping_file(
                 args.annotation_file, mask)
         else:

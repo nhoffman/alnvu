@@ -23,8 +23,8 @@ credentials::
 
 Build and upload (requires `twine` and `wheel` packages)::
 
-  rm -rf dist build
-  python setup.py clean
+  rm -r dist
+  python setup.py clean --all
   python setup.py sdist bdist_wheel
   twine upload dist/*
 
