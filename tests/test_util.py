@@ -2,7 +2,7 @@ from os import path
 import unittest
 import logging
 
-import config
+from . import config
 from alnvu import util
 
 log = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ class TestFastaObject(unittest.TestCase):
     def test03(self):
         with open(infile) as f:
             seqs = util.readfasta(f)
-            seq = seqs.next()
+            seq = next(seqs)
 
         self.assertTrue(hasattr(seq, 'name'))
         self.assertTrue(hasattr(seq, 'seq'))
@@ -84,7 +84,7 @@ class TestReadFasta(unittest.TestCase):
     def test06(self):
         with open(path.join(config.datadir, 'none.fasta')) as f:
             seqs = util.readfasta(f)
-            self.assertRaises(StopIteration, seqs.next)
+            self.assertRaises(StopIteration, seqs.__next__)
 
     def test07(self):
         with open(path.join(config.datadir, 'none.fasta')) as f:

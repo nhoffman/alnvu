@@ -17,9 +17,9 @@ def get_range(rawrange):
     try:
         start, stop = [int(x) for x in rawrange.split(',')]
     except (ValueError, AttributeError):
-        print(
+        print((
             'Error in "-r/--range {}": argument requires two '
-            'integers separated by a comma.'.format(rawrange))
+            'integers separated by a comma.'.format(rawrange)))
         sys.exit(1)
 
     return [start, stop]
@@ -223,7 +223,7 @@ def main(arguments=None):
 
     if not seqs:
         if not args.quiet:
-            print 'No sequences in input'
+            print('No sequences in input')
         return 0 if args.empty_ok else 1
 
     if args.rename_from_file:

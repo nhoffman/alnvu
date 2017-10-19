@@ -4,11 +4,11 @@ import unittest
 import logging
 import sys
 import shutil
-from cStringIO import StringIO
+from io import StringIO
 
 from alnvu.av import main
 
-import config
+from . import config
 
 log = logging.getLogger(__name__)
 

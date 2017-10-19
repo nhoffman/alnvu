@@ -1,6 +1,6 @@
 import os
 import sys
-from itertools import izip_longest, takewhile
+from itertools import zip_longest, takewhile
 
 def grouper(n, iterable, pad=True):
     """
@@ -10,7 +10,7 @@ def grouper(n, iterable, pad=True):
     """
 
     args = [iter(iterable)] * n
-    iterout = izip_longest(fillvalue=None, *args)
+    iterout = zip_longest(fillvalue=None, *args)
 
     if pad:
         return iterout

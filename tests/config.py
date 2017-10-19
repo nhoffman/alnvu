@@ -4,7 +4,7 @@ import sys
 import logging
 import re
 import unittest
-import commands
+import subprocess
 import shutil
 
 log = logging
