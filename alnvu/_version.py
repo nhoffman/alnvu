@@ -29,8 +29,12 @@ def get_version(datadir=None):
     datadir = datadir or os.path.join(os.path.dirname(__file__), 'data')
     version_file = os.path.join(datadir, 'ver')
 
-    st0 = traceback.extract_stack()[0]
-    in_setup = st0.filename if hasattr(st0, 'filename') else st0[0] == 'setup.py'
+    # only try to create the version file if setup.py is someplace in the stack
+    stack = traceback.extract_stack()
+    try:
+        in_setup = any(s.filename.endswith('setup.py') for s in stack)
+    except AttributeError:
+        in_setup = any(s[0].endswith('setup.py') for s in stack)
 
     if in_setup:
         sys.stdout.write('updating {} with version '.format(version_file))
