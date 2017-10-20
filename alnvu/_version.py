@@ -30,7 +30,7 @@ def get_version(datadir=None):
     version_file = os.path.join(datadir, 'ver')
 
     st0 = traceback.extract_stack()[0]
-    in_setup = st0.filename if hasattr(st0, 'filename') else st0[0]
+    in_setup = st0.filename if hasattr(st0, 'filename') else st0[0] == 'setup.py'
 
     if in_setup:
         sys.stdout.write('updating {} with version '.format(version_file))
