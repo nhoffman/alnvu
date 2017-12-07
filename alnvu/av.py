@@ -233,8 +233,8 @@ def main(arguments=None):
 
     if args.rename_from_file:
         namedict = dict(row for row in csv.reader(args.rename_from_file))
-        for seq in seqs:
-            seq.name = namedict.get(seq.name, seq.name)
+        seqs = (util.Seq(name=namedict.get(seq.name, seq.name), seq=seq.seq)
+                for seq in seqs)
 
     if args.sort_by_name:
         sortdict = dict((line.strip(), i)
@@ -310,11 +310,9 @@ def main(arguments=None):
             blocks_per_page=args.blocks_per_page
         )
 
-    if args.infile is not sys.stdin:
-        args.infile.close()
-
-    if args.outfile is not sys.stdout:
-        args.outfile.close()
+    for name, arg in args.__dict__.items():
+        if hasattr(arg, 'close') and arg not in {sys.stdin, sys.stdout}:
+            arg.close()
 
 
 if __name__ == '__main__':

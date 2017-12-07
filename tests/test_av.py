@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 infile = path.join(config.datadir, 'aln.fasta')
 treefile = path.join(config.datadir, 'aln.tre')
+renamefile = path.join(config.datadir, 'rename.csv')
 
 
 def mkdir(dirpath, clobber=False):
@@ -119,3 +120,6 @@ class TestCLI(unittest.TestCase):
 
     def test09(self):
         self.run_cmd(self.args + ['--color'])
+
+    def test10(self):
+        self.run_cmd(self.args + ['--rename-from-file', renamefile])
