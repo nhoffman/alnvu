@@ -2,6 +2,11 @@
  changes for alnvu
 ===================
 
+0.3.2
+=====
+
+* fix --rename-from-file [GH7]
+
 0.3.1
 =====
 
