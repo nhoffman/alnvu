@@ -298,7 +298,7 @@ def main(arguments=None):
     if not args.quiet:
         for page in pages:
             for line in page:
-                args.outfile.write(line + '\n')
+                args.outfile.write(line.rstrip() + '\n')
             args.outfile.write('\n')
 
     if args.pdf:
