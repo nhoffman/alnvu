@@ -231,11 +231,6 @@ def main(arguments=None):
             print('No sequences in input')
         return 0 if args.empty_ok else 1
 
-    if args.rename_from_file:
-        namedict = dict(row for row in csv.reader(args.rename_from_file))
-        seqs = (util.Seq(name=namedict.get(seq.name, seq.name), seq=seq.seq)
-                for seq in seqs)
-
     if args.sort_by_name:
         sortdict = dict((line.strip(), i)
                         for i, line in enumerate(args.sort_by_name))
@@ -246,7 +241,12 @@ def main(arguments=None):
         sortdict = {}
 
     if sortdict:
-        seqs.sort(key=lambda seq: (sortdict.get(seq.name), seq.name))
+        seqs = iter(sorted(seqs, key=lambda seq: (sortdict.get(seq.name), seq.name)))
+
+    if args.rename_from_file:
+        namedict = dict(row for row in csv.reader(args.rename_from_file))
+        seqs = (util.Seq(name=namedict.get(seq.name, seq.name), seq=seq.seq)
+                for seq in seqs)
 
     formatted_seqs, vnumstrs, mask = util.reformat(
         seqs,
