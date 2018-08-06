@@ -2,6 +2,13 @@
  changes for alnvu
 ===================
 
+0.3.3
+=====
+
+* fix ``--sort-by-name FILE`` (where FILE contains original names if
+  ``--rename -from-file`` is also used.
+* remove trailing whitespace from terminal output
+
 0.3.2
 =====
 
